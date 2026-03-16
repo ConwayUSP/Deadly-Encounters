@@ -3,6 +3,7 @@
 ----------------------------------------
 
 ACTION = {}
+ACTION.NONE = "none"
 ACTION.RECHARGE = "recarregar"
 ACTION.ATK = "ataque"
 ACTION.HEAVY_ATK = "ataque pesado"
