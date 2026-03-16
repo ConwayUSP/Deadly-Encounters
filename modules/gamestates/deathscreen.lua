@@ -1,7 +1,7 @@
 local DeathState = {}
 DeathState.__index = MenuState
 
--- TODO: preencher o estado do menu
+-- TODO: preencher o estado
 DeathState.sprites = {}
 DeathState.texts = {}
 

@@ -1,7 +1,7 @@
 local BattleState = {}
 BattleState.__index = MenuState
 
--- TODO: preencher o estado do menu
+-- TODO: preencher o estado
 BattleState.sprites = {}
 BattleState.texts = {}
 BattleState.oponent = nil -- botar construtor do primeiro oponente
