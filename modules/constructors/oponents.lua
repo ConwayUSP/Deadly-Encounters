@@ -1,6 +1,6 @@
 -- apenas um exemplo
 function initAberration()
-    local aberrationStategy = function(self, player, turn)
+    local aberrationStategy = function(self, player, turn, hist)
         if self.ammo == 0 then
             return ACTION.RECHARGE
         else

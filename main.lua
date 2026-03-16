@@ -3,11 +3,13 @@
 ----------------------------------------
 require("modules.actions")
 require("modules.gamectx")
+require("modules.gamestate")
 require("modules.oponent")
 require("modules.menu")
 local player = require("modules.player")
 
 GameCtx = CTX.MENU
+GameState = GAMESTATE.MENU
 
 function love.load()
     love.window.setMode(1920, 1080)
