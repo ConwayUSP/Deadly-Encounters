@@ -51,7 +51,7 @@ function Oponent:resetForBattle()
 	end
 end
 
-function Player:useBuff(buff)
+function Oponent:useBuff(buff)
 	if buff.quantity <= 0 then
 		return
 	end
