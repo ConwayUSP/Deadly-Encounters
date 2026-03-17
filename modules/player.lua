@@ -18,6 +18,7 @@ Player.hp = Player.initialHp
 Player.ammo = 0
 Player.defCount = 0
 Player.counters = Player.MaxCounters
+Player.dmgMult = 1
 Player.action = ACTION.NONE
 Player.items = {}
 Player.upgrades = {}
@@ -29,8 +30,19 @@ function Player:resetForBattle()
 	self.counters = self.maxCounters
 	self.ammo = 0
 	self.defCount = 0
+	self.dmgMult = 1
 	self.usedItems = {}
 	self.action = ACTION.NONE
+
+	for _, upgrade in pairs(self.upgrades) do
+		if upgrade.onStart then
+			upgrade:active(self)
+		end
+	end
+
+	for _, item in pairs(self.items) do
+		item.quantity = item.initialQuantity
+	end
 end
 
 function Player:getItem(item, idx)
@@ -43,21 +55,23 @@ function Player:getItem(item, idx)
 end
 
 function Player:getUpgrade(upgrade)
-	table.insert(self.items, upgrade)
+	table.insert(self.upgrades, upgrade)
 end
 
--- após um item ser usado, ele precisa ser descartado
--- da lista de items e da lista de items usados
+-- discarta item da lista de itens usados, para que ele não seja ativado mais de uma vez
 function Player:discardItem(item)
-	for k, v in pairs(self.items) do
-		if v == item then
-			self.items[k] = nil
-		end
-	end
-
 	for k, v in pairs(self.usedItems) do
 		if v == item then
 			self.usedItems[k] = nil
+		end
+	end
+end
+
+-- discarta um upgrade (caso ele seja de uso único)
+function Player:discardUpgrade(upgrade)
+	for k, v in pairs(self.upgrades) do
+		if v == upgrade then
+			self.upgrades[k] = nil
 		end
 	end
 end
