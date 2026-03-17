@@ -2,19 +2,14 @@
 ----------------------------------------
 require("table")
 require("modules.engine.text")
+require("modules.utils")
 
 ----------------------------------------
 -- Entidade Final Screen (representa Victory Screen e Death Screen)
 ----------------------------------------
 
-
 FinalScreen = {}
 FinalScreen.__index = FinalScreen
-
--- caminho da fonte principal do jogo
-FinalScreen.fontPath = "assets/fonts"
-
-FinalScreen.fontName = "Cute Dino"
 
 -- fontes usadas no menu
 FinalScreen.titleFont = nil
@@ -78,13 +73,9 @@ local function resolvePath(base, relative, ending)
 end
 
 function FinalScreen:loadFonts()
-	if love.filesystem.getInfo(resolvePath(self.fontPath, self.fontName, ".ttf")) then
-		self.titleFont = love.graphics.newFont(resolvePath(self.fontPath, self.fontName, ".ttf"), 64)
-		self.promptFont = love.graphics.newFont(resolvePath(self.fontPath, self.fontName, ".ttf"), 32)
-	else
-		self.titleFont = love.graphics.newFont(64)
-		self.promptFont = love.graphics.newFont(32)
-	end
+
+	self.titleFont = love.graphics.newFont(64)
+	self.promptFont = love.graphics.newFont(32)
 end
 
 function FinalScreen:update(dt)

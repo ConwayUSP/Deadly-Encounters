@@ -4,6 +4,7 @@
 require("modules.engine.animation")
 require("modules.constructors.oponents")
 require("modules.inventory")
+require("modules.constructors.oponents")
 
 ----------------------------------------
 -- Classe Oponente

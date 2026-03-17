@@ -35,7 +35,7 @@ ItemUpgrade.__index = ItemUpgrade
 function ItemUpgrade.new(id, desc, effectFunc, type, quantity, onStart)
 	local buff = setmetatable({}, ItemUpgrade)
 	buff.id = id
-	buff.desc = desc
+	buff.description = desc
 	buff.applyEffect = effectFunc
 	buff.onStart = onStart or false
 	buff.type = type
