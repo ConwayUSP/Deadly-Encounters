@@ -5,34 +5,36 @@ require("modules.actions")
 require("modules.gamectx")
 require("modules.gamestate")
 require("modules.oponent")
-require("modules.menu")
 require("modules.finalscreen")
 
-local player = require("modules.player")
+local Player = require("modules.player")
 
 GameCtx = CTX.MENU
-GameState = GAMESTATE.MENU
 
-local victoryScreen = FinalScreen:new(GAMESTATE.VICTORY_SCREEN.texts.title, GAMESTATE.VICTORY_SCREEN.texts.prompt)
-local deathScreen = FinalScreen:new(GAMESTATE.DEATH_SCREEN.texts.title, GAMESTATE.DEATH_SCREEN.texts.prompt)
+GameState = {}
+GameState[CTX.MENU] = GAMESTATE[CTX.MENU]
+GameState[CTX.BATTLE] = GAMESTATE[CTX.BATTLE]
+GameState[CTX.SHOP] = GAMESTATE[CTX.SHOP]
+GameState[CTX.DEATH_SCREEN] = GAMESTATE[CTX.DEATH_SCREEN]
+GameState[CTX.VICTORY_SCREEN] = GAMESTATE[CTX.VICTORY_SCREEN]
+
+-- Função auxiliar para trocar de contexto e carregar o novo estado
+-- TODO: inserir transição
+function SetGameCtx(newCtx)
+	GameCtx = newCtx
+	GameState[GameCtx]:load()
+end
 
 function love.load()
-	love.window.setMode(1920, 1080)
+	love.window.setFullscreen(true)
 	math.randomseed(os.time())
 
-	Menu:loadFonts()
+	-- carrega o estado inicial
+	SetGameCtx(GameCtx)
 end
 
 function love.update(dt)
-	if GameCtx == CTX.MENU then
-		Menu:update(dt)
-	elseif GameCtx == CTX.COMBAT then
-	elseif GameCtx == CTX.SHOP then
-	elseif GameCtx == CTX.VICTORY_SCREEN then
-		victoryScreen:update(dt)
-	elseif GameCtx == CTX.DEATH_SCREEN then
-		deathScreen:update(dt)
-	end
+	GameState[GameCtx]:update(dt)
 end
 
 function love.draw()
