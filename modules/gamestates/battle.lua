@@ -63,11 +63,11 @@ function BattleState:simulaConfronto()
 
 	if resultadoTurno == Combat.WIN and BattleState.battleNum == 6 then
 		-- ganhar a sexta batalha == vitória
-		GameCtx = CTX.VICTORY_SCREEN
+		SetGameCtx(CTX.VICTORY_SCREEN)
 	elseif resultadoTurno == Combat.LOSS then
-		GameCtx = CTX.DEATH_SCREEN
+		SetGameCtx(CTX.DEATH_SCREEN)
 	elseif resultadoTurno == Combat.WIN then
-		GameCtx = CTX.SHOP
+		SetGameCtx(CTX.SHOP)
 	end
 end
 
