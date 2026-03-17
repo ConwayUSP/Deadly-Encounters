@@ -18,6 +18,7 @@ Player.hp = Player.initialHp
 Player.ammo = 0
 Player.defCount = 0
 Player.counters = Player.MaxCounters
+Player.dmgMult = 1
 Player.action = ACTION.NONE
 Player.items = {}
 Player.upgrades = {}
@@ -29,6 +30,7 @@ function Player:resetForBattle()
 	self.counters = self.maxCounters
 	self.ammo = 0
 	self.defCount = 0
+	self.dmgMult = 1
 	self.usedItems = {}
 	self.action = ACTION.NONE
 
