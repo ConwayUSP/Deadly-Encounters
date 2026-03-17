@@ -40,6 +40,9 @@ end
 function simulaTurno(player, oponente, historico)
   oponente.action = oponente:makeDecision(player, historico)
 
+  usaItems(player, oponente)
+  usaItems(oponente, player)
+
   acao_player_invalida = validaAcao(player, historico)
   acao_oponente_invalida = validaAcao(oponente, historico)
 
@@ -135,6 +138,13 @@ function resultadoCombate(player, oponente)
     return Combat.WIN
   else
     return Combat.ONGOING
+  end
+end
+
+-- ativa os itens que estão em usedItems
+function usaItems(criatura, oponente)
+  for _, item in pairs(criatura.usedItems) do
+    item:active(criatura, oponente)
   end
 end
 
