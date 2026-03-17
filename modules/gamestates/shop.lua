@@ -2,7 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("table")
-local Player = require("modules.player")
+require("modules.constructors.buffs")
 
 ----------------------------------------
 -- Entidade ShopState
@@ -20,7 +20,7 @@ ShopState.allItems = {
 	initStopWatch(),
 	initEnergyDrink(),
 	initFlashbang(),
-	initPotion()
+	initPotion(),
 }
 ShopState.sprites = {}
 ShopState.texts = {}

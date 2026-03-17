@@ -104,7 +104,8 @@ function addAnimation(entity, path, action, settings)
 end
 
 function pathlizeName(s)
-	return string.lower(string.gsub(s, " ", "_"))
+	local str = string.lower(string.gsub(s, " ", "_"))
+	return string.gsub(str, "'", "_")
 end
 
 -- transforma uma lista de pastas e um nome de arquivo em um caminho para o arquivo
@@ -122,6 +123,8 @@ end
 
 -- inicializa as "animações" de um player ou oponente
 function initCreatureAnimations(creature)
+	creature.animations = {}
+	creature.spriteSheets = {}
 	-- todos os spritesheets terão o mesmo tamanho e apenas 1 frame
 	local spriteSize = { width = 256, height = 512 }
 	local animSettings = newAnimSetting(1, spriteSize, 0.1, true, 1)
@@ -129,7 +132,7 @@ function initCreatureAnimations(creature)
 	-- adiciona os sprites e animações de cada ação (NONE vale como idle)
 	for k, state in pairs(ACTION) do
 		local path = pngPathFormat({ "assets", creature.name, state })
-		addAnimation(ceature, path, state, spriteSize)
+		addAnimation(creature, path, state, animSettings)
 	end
 end
 
