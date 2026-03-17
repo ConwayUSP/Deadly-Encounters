@@ -8,7 +8,7 @@ function initAberration()
 			ACTION.HEAVY_ATK,
 			ACTION.DEFENSE,
 			ACTION.COUNTER,
-			ACTION.MISS
+			ACTION.MISS,
 		}
 
 		local i = math.random(6)

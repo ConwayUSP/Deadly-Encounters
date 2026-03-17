@@ -27,28 +27,14 @@ function Oponent.new(name, maxHP, maxCounters, items, upgrades, strategyFunc)
 	oponent.action = ACTION.NONE
 	initCreatureAnimations(oponent)
 
-	return oponent
-end
-
-function Oponent:resetForBattle()
-	self.hp = self.maxHp or self.hp
-	self.counters = self.maxCounters or self.counters
-	self.ammo = 0
-	self.defCount = 0
-	self.dmgMult = 1
-	self.action = ACTION.NONE
-
-	for _, upgrade in pairs(self.inventory.upgrades) do
+	-- ativa os upgrades para o oponente já surgir buffado
+	for _, upgrade in pairs(oponent.inventory.upgrades) do
 		if upgrade.onStart then
-			upgrade:active(self)
+			upgrade:active(oponent)
 		end
 	end
 
-	for _, item in pairs(self.inventory.items) do
-		if item.initialQuantity ~= nil then
-			item.quantity = item.initialQuantity
-		end
-	end
+	return oponent
 end
 
 function Oponent:useBuff(buff)
@@ -58,6 +44,26 @@ function Oponent:useBuff(buff)
 
 	buff.quantity = buff.quantity - 1
 	self.inventory:addToUsed(buff)
+end
+
+function generateOponentPool()
+	local pool = {
+		initAberration(),
+		initArchibald(),
+		initDjabo(),
+		initJoshua(),
+		initOZard(),
+		initLarry(),
+		initSebastiao(),
+	}
+
+	-- randomiza a ordem dos oponentes
+	local len = #pool
+	for i = len, 2, -1 do
+		local j = math.random(i)
+		pool[i], pool[j] = pool[j], pool[i]
+	end
+	return pool
 end
 
 return Oponent

@@ -1,10 +1,15 @@
 ----------------------------------------
+-- Importação de módulos
+----------------------------------------
+require("modules.gamectx")
+
+----------------------------------------
 -- Tabela de estados do jogo
 ----------------------------------------
 
 GAMESTATE = {}
-GAMESTATE.MENU = require("modules.gamestates.menu")
-GAMESTATE.BATTLE = require("modules.gamestates.battle")
-GAMESTATE.SHOP = require("modules.gamestates.shop")
-GAMESTATE.DEATH_SCREEN = require("modules.gamestates.deathscreen")
-GAMESTATE.VICTORY_SCREEN = require("modules.gamestates.victoryscreen")
+GAMESTATE[CTX.MENU] = require("modules.gamestates.menu")
+GAMESTATE[CTX.BATTLE] = require("modules.gamestates.battle")
+GAMESTATE[CTX.SHOP] = require("modules.gamestates.shop")
+GAMESTATE[CTX.DEATH_SCREEN] = require("modules.gamestates.deathscreen")
+GAMESTATE[CTX.VICTORY_SCREEN] = require("modules.gamestates.victoryscreen")
