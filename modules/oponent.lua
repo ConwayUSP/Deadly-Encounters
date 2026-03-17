@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.engine.animation")
+require("modules.inventory")
 
 ----------------------------------------
 -- Classe Oponente
@@ -22,9 +23,7 @@ function Oponent.new(name, maxHP, maxCounters, items, upgrades, strategyFunc)
 	oponent.dmgMult = 1
 	oponent.makeDecision = strategyFunc
 	oponent.ammo = 0
-	oponent.items = items or {}
-	oponent.upgrades = upgrades or {}
-	oponent.usedItems = {}
+	oponent.inventory = Inventory.new(items, upgrades)
 	oponent.action = ACTION.NONE
 	initCreatureAnimations(oponent)
 
@@ -37,36 +36,28 @@ function Oponent:resetForBattle()
 	self.ammo = 0
 	self.defCount = 0
 	self.dmgMult = 1
-	self.usedItems = {}
 	self.action = ACTION.NONE
 
-	for _, upgrade in pairs(self.upgrades) do
+	for _, upgrade in pairs(self.inventory.upgrades) do
 		if upgrade.onStart then
 			upgrade:active(self)
 		end
 	end
 
-	for _, item in pairs(self.items) do
+	for _, item in pairs(self.inventory.items) do
 		if item.initialQuantity ~= nil then
 			item.quantity = item.initialQuantity
 		end
 	end
 end
 
-function Oponent:discardItem(item)
-	for k, v in pairs(self.usedItems) do
-		if v == item then
-			self.usedItems[k] = nil
-		end
+function Player:useBuff(buff)
+	if buff.quantity <= 0 then
+		return
 	end
-end
 
-function Oponent:discardUpgrade(upgrade)
-	for k, v in pairs(self.upgrades) do
-		if v == upgrade then
-			self.upgrades[k] = nil
-		end
-	end
+	buff.quantity = buff.quantity - 1
+	self.inventory:addToUsed(buff)
 end
 
 return Oponent

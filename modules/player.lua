@@ -3,6 +3,7 @@
 ----------------------------------------
 require("table")
 require("modules.engine.animation")
+require("modules.inventory")
 
 ----------------------------------------
 -- Entidade Player
@@ -20,9 +21,7 @@ Player.defCount = 0
 Player.counters = Player.MaxCounters
 Player.dmgMult = 1
 Player.action = ACTION.NONE
-Player.items = {}
-Player.upgrades = {}
-Player.usedItems = {}
+Player.inventory = Inventory.new()
 initCreatureAnimations(Player)
 
 function Player:resetForBattle()
@@ -31,49 +30,30 @@ function Player:resetForBattle()
 	self.ammo = 0
 	self.defCount = 0
 	self.dmgMult = 1
-	self.usedItems = {}
 	self.action = ACTION.NONE
 
-	for _, upgrade in pairs(self.upgrades) do
+	for _, upgrade in pairs(self.inventory.upgrades) do
 		if upgrade.onStart then
 			upgrade:active(self)
 		end
 	end
 
-	for _, item in pairs(self.items) do
+	for _, item in pairs(self.inventory.items) do
 		item.quantity = item.initialQuantity
 	end
 end
 
-function Player:getItem(item, idx)
-	idx = idx or #self.items + 1
-	if idx < 1 or idx > 3 then
-		return -- limite de itens alcançado
-	end
-
-	table.insert(self.items, item)
+function Player:getBuff(buff)
+	self.inventory:insert(buff)
 end
 
-function Player:getUpgrade(upgrade)
-	table.insert(self.upgrades, upgrade)
-end
-
--- discarta item da lista de itens usados, para que ele não seja ativado mais de uma vez
-function Player:discardItem(item)
-	for k, v in pairs(self.usedItems) do
-		if v == item then
-			self.usedItems[k] = nil
-		end
+function Player:useBuff(buff)
+	if buff.quantity <= 0 then
+		return
 	end
-end
 
--- discarta um upgrade (caso ele seja de uso único)
-function Player:discardUpgrade(upgrade)
-	for k, v in pairs(self.upgrades) do
-		if v == upgrade then
-			self.upgrades[k] = nil
-		end
-	end
+	buff.quantity = buff.quantity - 1
+	self.inventory:addToUsed(buff)
 end
 
 return Player
