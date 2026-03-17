@@ -1,5 +1,5 @@
 local BattleState = {}
-BattleState.__index = MenuState
+BattleState.__index = BattleState
 
 -- TODO: preencher o estado
 BattleState.sprites = {}

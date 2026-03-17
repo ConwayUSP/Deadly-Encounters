@@ -1,11 +1,11 @@
 local DeathState = {}
-DeathState.__index = MenuState
+DeathState.__index = DeathState
 
 -- TODO: preencher o estado
 DeathState.sprites = {}
 DeathState.texts = {
 	title = "Game Over...",
-	prompt = "Press Enter or Space to Play Again"
+	prompt = "Press Enter or Space to Play Again",
 }
 
 return DeathState

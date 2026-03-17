@@ -1,5 +1,5 @@
 local ShopState = {}
-ShopState.__index = MenuState
+ShopState.__index = ShopState
 
 -- TODO: preencher o estado da loja
 ShopState.items = {}
