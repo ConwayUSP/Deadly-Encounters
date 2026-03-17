@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.engine.animation")
+require("modules.constructors.oponents")
 require("modules.inventory")
 
 ----------------------------------------

@@ -11,11 +11,15 @@ function Inventory.new(initialItems, initialUpgrades)
 	inv.upgrades = {}
 	inv.usedQueue = {}
 
-	for _, v in pairs(initialItems) do
-		table.insert(inv.items, v)
+	if initialItems then
+		for _, v in pairs(initialItems) do
+			table.insert(inv.items, v)
+		end
 	end
-	for _, v in pairs(initialUpgrades) do
-		table.insert(inv.upgrades, v)
+	if initialUpgrades then
+		for _, v in pairs(initialUpgrades) do
+			table.insert(inv.upgrades, v)
+		end
 	end
 
 	return inv
