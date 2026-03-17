@@ -14,11 +14,11 @@ Player.__index = Player
 
 Player.name = "you"
 Player.maxHp = 100
+Player.hp = Player.maxHp
 Player.maxCounters = 3
-Player.hp = Player.initialHp
+Player.counters = Player.MaxCounters
 Player.ammo = 0
 Player.defCount = 0
-Player.counters = Player.MaxCounters
 Player.dmgMult = 1
 Player.action = ACTION.NONE
 Player.inventory = Inventory.new()

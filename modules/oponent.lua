@@ -16,8 +16,8 @@ function Oponent.new(name, maxHP, maxCounters, items, upgrades, strategyFunc)
 
 	oponent.name = name
 	oponent.maxHp = maxHP
-	oponent.maxCounters = maxCounters
 	oponent.hp = maxHP
+	oponent.maxCounters = maxCounters
 	oponent.counters = maxCounters
 	oponent.defCount = 0
 	oponent.dmgMult = 1
@@ -51,7 +51,7 @@ function Oponent:resetForBattle()
 	end
 end
 
-function Player:useBuff(buff)
+function Oponent:useBuff(buff)
 	if buff.quantity <= 0 then
 		return
 	end
