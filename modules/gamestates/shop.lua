@@ -119,6 +119,7 @@ function DescriptionCard:draw()
 	self.description:draw(self.position.x, self.position.y)
 end
 
+local resolvePath = require("modules.engine.path")
 ----------------------------------------
 -- Entidade ShopState
 ----------------------------------------

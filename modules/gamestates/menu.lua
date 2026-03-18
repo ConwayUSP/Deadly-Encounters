@@ -3,6 +3,7 @@
 ----------------------------------------
 require("modules.engine.text")
 require("modules.utils")
+local resolvePath = require("modules.engine.path")
 
 ----------------------------------------
 -- Estado do Menu

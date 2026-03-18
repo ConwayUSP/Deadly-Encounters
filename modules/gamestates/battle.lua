@@ -2,7 +2,7 @@
 -- Importações de módulos
 ----------------------------------------
 require("modules.oponent")
-
+local resolvePath = require("modules.engine.path")
 ----------------------------------------
 -- Estado do jogo no contexto de batalha
 ----------------------------------------
@@ -20,6 +20,33 @@ BattleState.timer = 0
 BattleState.decisionTime = 5
 BattleState.turn = 1
 BattleState.hist = {}
+
+-- Carrega assets da Batalha
+function BattleState:load()
+    self.bg = love.graphics.newImage(resolvePath("assets/UI", "battle_bg", ".png"))
+end
+
+-- Atualiza o estado da batalha
+function BattleState:update()
+
+end
+
+-- Detecta o input do usuário
+function BattleState:keypressed(key, scancode, isrepeat)
+    -- TODO: remover isso
+    if key == "return" or key == "space" then
+        SetGameCtx(CTX.VICTORY_SCREEN)
+    elseif key == "s" then
+        SetGameCtx(CTX.SHOP)
+    end
+
+    -- TODO: lógica de decisão e poderes
+end
+
+-- Desenha a batalha
+function BattleState:draw()
+    love.graphics.draw(self.bg)
+end
 
 -- para caso o jogo recomece
 function BattleState:reset()
