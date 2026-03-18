@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("table")
+require("modules.fs")
 
 ----------------------------------------
 -- Classe Animation
@@ -61,7 +62,7 @@ end
 function newAnimation(path, settings)
 	local sheetImg = love.graphics.newImage(path)
 	local frames = {}
-	local gap = 4
+	local gap = 0
 	local sWidth = sheetImg:getWidth()
 	local sHeight = sheetImg:getHeight()
 	local qWidth = settings.quadSize.width
@@ -103,24 +104,6 @@ function addAnimation(entity, path, action, settings)
 	entity.spriteSheets[action] = love.graphics.newImage(path)
 end
 
-function pathlizeName(s)
-	local str = string.lower(string.gsub(s, " ", "_"))
-	return string.gsub(str, "'", "_")
-end
-
--- transforma uma lista de pastas e um nome de arquivo em um caminho para o arquivo
-function pngPathFormat(parts)
-	local path = ""
-	for i, v in ipairs(parts) do
-		if i ~= #parts then
-			path = path .. pathlizeName(v) .. "/"
-		else
-			path = path .. pathlizeName(v) .. ".png"
-		end
-	end
-	return path
-end
-
 -- inicializa as "animações" de um player ou oponente
 function initCreatureAnimations(creature)
 	creature.animations = {}
@@ -131,6 +114,7 @@ function initCreatureAnimations(creature)
 
 	-- adiciona os sprites e animações de cada ação (NONE vale como idle)
 	for k, state in pairs(ACTION) do
+		print(state)
 		local path = pngPathFormat({ "assets", creature.name, state })
 		addAnimation(creature, path, state, animSettings)
 	end

@@ -107,9 +107,11 @@ function resultadoCombate(player, oponente)
 end
 
 -- ativa os itens que estão em usedItems
-function usaItems(criatura, oponente)
-	for _, item in pairs(criatura.usedItems) do
-		item:activate(criatura, oponente)
+function usaItems(creature, oponent)
+	for _, buff in pairs(creature.inventory.usedQueue) do
+		if buff.type == BUFF_TYPE.ITEM then
+			item:activate(creature, oponent)
+		end
 	end
 end
 

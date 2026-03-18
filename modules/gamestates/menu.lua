@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.engine.text")
+require("modules.fs")
 
 ----------------------------------------
 -- Estado do Menu
@@ -20,18 +21,9 @@ MenuState.fontName = "Cute Dino"
 MenuState.titleFont = nil
 MenuState.promptFont = nil
 
-local function resolvePath(base, relative, ending)
-	local path = base .. "/" .. relative .. (ending or "")
-	if love.filesystem.getInfo(path) then
-		return path
-	else
-		return nil
-	end
-end
-
 function MenuState:load()
 	-- carrega fontes
-	if love.filesystem.getInfo(resolvePath(self.fontPath, self.fontName, ".ttf")) then
+	if resolvePath(self.fontPath, self.fontName, ".ttf") then
 		self.titleFont = love.graphics.newFont(resolvePath(self.fontPath, self.fontName, ".ttf"), 64)
 		self.promptFont = love.graphics.newFont(resolvePath(self.fontPath, self.fontName, ".ttf"), 32)
 	else
@@ -83,6 +75,7 @@ function MenuState:update(dt)
 			text:update(dt)
 		end
 	end
+	cleanUpTexts(self.texts)
 end
 
 function MenuState:draw()
@@ -90,27 +83,7 @@ function MenuState:draw()
 	love.graphics.clear(0.95, 0.90, 0.80)
 
 	for key, text in pairs(self.texts) do
-		local font = text.font or love.graphics.getFont()
-		love.graphics.setFont(font)
-
-		local content = text.content or ""
-		local width = font:getWidth(content)
-		local height = font:getHeight()
-
-		local x = text.pos[1]
-		local y = text.pos[2]
-		local rotation = text.rotation or 0
-		local scale = text.scale or 1
-		local ox, oy = 0, 0
-
-		if text.centerOffset then
-			ox = width / 2
-			oy = height / 2
-		end
-
-		local color = text.color or { 1, 1, 1, 1 }
-		love.graphics.setColor(color[1], color[2], color[3], color[4] or 1)
-		love.graphics.print(content, x, y, rotation, scale, scale, ox, oy)
+		text:draw()
 	end
 
 	-- reset de cor
