@@ -139,8 +139,16 @@ function BattleState:draw()
 	self.oponent:draw(oponentPos)
 end
 
+-- Detecta o input do usuário
 function BattleState:keypressed(key, scancode, isrepeat)
-	return
+	-- TODO: remover isso
+	if key == "return" or key == "space" then
+		SetGameCtx(CTX.VICTORY_SCREEN)
+	elseif key == "s" then
+		SetGameCtx(CTX.SHOP)
+	end
+
+	-- TODO: lógica de decisão e poderes
 end
 
 return BattleState

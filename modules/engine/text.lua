@@ -5,7 +5,7 @@
 Text = {}
 Text.__index = Text
 
-function Text.new(content, size, color, pos, rotation, centerOffset, lifetime, updateFunc)
+function Text.new(content, size, color, pos, rotation, centerOffset, lifetime, updateFunc, maxWidth)
 	local text = setmetatable({}, Text)
 
 	text.content = content
@@ -17,6 +17,7 @@ function Text.new(content, size, color, pos, rotation, centerOffset, lifetime, u
 	text.timer = lifetime
 	text.customUpdate = updateFunc
 	text.isOver = false
+	text.maxWidth = maxWidth
 
 	return text
 end
@@ -42,7 +43,12 @@ function Text:draw()
 	love.graphics.setFont(font)
 
 	local content = self.content or ""
-	local width = font:getWidth(content)
+	local width
+	if self.maxWidth then
+		width = self.maxWidth
+	else
+		width = font:getWidth(content)
+	end
 	local height = font:getHeight()
 
 	local x = self.pos[1]
@@ -58,5 +64,9 @@ function Text:draw()
 
 	local color = self.color or { 1, 1, 1, 1 }
 	love.graphics.setColor(color[1], color[2], color[3], color[4] or 1)
-	love.graphics.print(content, x, y, rotation, scale, scale, ox, oy)
+	if self.maxWidth then
+		love.graphics.printf(content, x, y, self.maxWidth, self.align or "left", rotation, scale, scale, ox, oy)
+	else
+		love.graphics.print(content, x, y, rotation, scale, scale, ox, oy)
+	end
 end

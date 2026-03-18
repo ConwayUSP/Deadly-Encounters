@@ -3,6 +3,7 @@
 ----------------------------------------
 require("modules.engine.text")
 require("modules.fs")
+require("modules.utils")
 
 ----------------------------------------
 -- Estado do Menu
@@ -14,22 +15,13 @@ MenuState.__index = MenuState
 MenuState.sprites = {}
 MenuState.texts = {}
 
--- caminho da fonte principal do jogo
-MenuState.fontPath = "assets/fonts"
-MenuState.fontName = "Cute Dino"
-
 MenuState.titleFont = nil
 MenuState.promptFont = nil
 
 function MenuState:load()
 	-- carrega fontes
-	if resolvePath(self.fontPath, self.fontName, ".ttf") then
-		self.titleFont = love.graphics.newFont(resolvePath(self.fontPath, self.fontName, ".ttf"), 64)
-		self.promptFont = love.graphics.newFont(resolvePath(self.fontPath, self.fontName, ".ttf"), 32)
-	else
-		self.titleFont = love.graphics.newFont(64)
-		self.promptFont = love.graphics.newFont(32)
-	end
+	self.titleFont = returnFont(64)
+	self.promptFont = returnFont(32)
 
 	local width, height = love.graphics.getDimensions()
 
