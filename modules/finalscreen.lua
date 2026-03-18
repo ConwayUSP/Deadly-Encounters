@@ -2,20 +2,15 @@
 ----------------------------------------
 require("table")
 require("modules.engine.text")
+require("modules.utils")
 local resolvePath = require("modules.engine.path")
 
 ----------------------------------------
 -- Entidade Final Screen (representa Victory Screen e Death Screen)
 ----------------------------------------
 
-
 FinalScreen = {}
 FinalScreen.__index = FinalScreen
-
--- caminho da fonte principal do jogo
-FinalScreen.fontPath = "assets/fonts"
-
-FinalScreen.fontName = "Cute Dino"
 
 -- fontes usadas no menu
 FinalScreen.titleFont = nil
@@ -70,13 +65,9 @@ function FinalScreen:new(title, prompt)
 end
 
 function FinalScreen:loadFonts()
-	if love.filesystem.getInfo(resolvePath(self.fontPath, self.fontName, ".ttf")) then
-		self.titleFont = love.graphics.newFont(resolvePath(self.fontPath, self.fontName, ".ttf"), 64)
-		self.promptFont = love.graphics.newFont(resolvePath(self.fontPath, self.fontName, ".ttf"), 32)
-	else
-		self.titleFont = love.graphics.newFont(64)
-		self.promptFont = love.graphics.newFont(32)
-	end
+
+	self.titleFont = love.graphics.newFont(64)
+	self.promptFont = love.graphics.newFont(32)
 end
 
 function FinalScreen:update(dt)
@@ -92,27 +83,7 @@ function FinalScreen:draw()
 	love.graphics.clear(0.95, 0.90, 0.80)
 
 	for _, text in pairs(self.texts or {}) do
-		local font = text.font or love.graphics.getFont()
-		love.graphics.setFont(font)
-
-		local content = text.content or ""
-		local width = font:getWidth(content)
-		local height = font:getHeight()
-
-		local x = text.pos[1]
-		local y = text.pos[2]
-		local rotation = text.rotation or 0
-		local scale = text.scale or 1
-		local ox, oy = 0, 0
-
-		if text.centerOffset then
-			ox = width / 2
-			oy = height / 2
-		end
-
-		local color = text.color or { 1, 1, 1, 1 }
-		love.graphics.setColor(color[1], color[2], color[3], color[4] or 1)
-		love.graphics.print(content, x, y, rotation, scale, scale, ox, oy)
+		text:draw()
 	end
 
 	-- reset de cor
