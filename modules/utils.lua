@@ -9,3 +9,7 @@ function returnFont(size)
     return love.graphics.newFont(size)
   end
 end
+
+function capitalize(string)
+  return string:gsub("^%l", string.upper)
+end

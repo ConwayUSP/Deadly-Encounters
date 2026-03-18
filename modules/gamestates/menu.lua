@@ -73,28 +73,8 @@ function MenuState:draw()
 	-- fundo em tom bege suave
 	love.graphics.clear(0.95, 0.90, 0.80)
 
-	for key, text in pairs(self.texts) do
-		local font = text.font or love.graphics.getFont()
-		love.graphics.setFont(font)
-
-		local content = text.content or ""
-		local width = font:getWidth(content)
-		local height = font:getHeight()
-
-		local x = text.pos[1]
-		local y = text.pos[2]
-		local rotation = text.rotation or 0
-		local scale = text.scale or 1
-		local ox, oy = 0, 0
-
-		if text.centerOffset then
-			ox = width / 2
-			oy = height / 2
-		end
-
-		local color = text.color or { 1, 1, 1, 1 }
-		love.graphics.setColor(color[1], color[2], color[3], color[4] or 1)
-		love.graphics.print(content, x, y, rotation, scale, scale, ox, oy)
+	for _, text in pairs(self.texts) do
+    text:draw()
 	end
 
 	-- reset de cor
