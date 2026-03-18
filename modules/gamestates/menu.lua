@@ -2,7 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.engine.text")
-
+local resolvePath = require("modules.engine.path")
 ----------------------------------------
 -- Estado do Menu
 ----------------------------------------
@@ -20,14 +20,7 @@ MenuState.fontName = "Cute Dino"
 MenuState.titleFont = nil
 MenuState.promptFont = nil
 
-local function resolvePath(base, relative, ending)
-	local path = base .. "/" .. relative .. (ending or "")
-	if love.filesystem.getInfo(path) then
-		return path
-	else
-		return nil
-	end
-end
+
 
 function MenuState:load()
 	-- carrega fontes
