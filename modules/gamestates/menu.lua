@@ -19,10 +19,6 @@ MenuState.titleFont = nil
 MenuState.promptFont = nil
 
 function MenuState:load()
-	-- carrega fontes
-	self.titleFont = returnFont(64)
-	self.promptFont = returnFont(32)
-
 	local width, height = love.graphics.getDimensions()
 
 	-- texto do título
@@ -41,7 +37,6 @@ function MenuState:load()
 			text.scale = 1 + 0.05 * math.sin(text.time * 0.5)
 		end
 	)
-	self.texts.title.font = self.titleFont
 
 	-- texto do prompt
 	self.texts.prompt = Text.new(
@@ -58,7 +53,6 @@ function MenuState:load()
 			text.color[4] = alpha
 		end
 	)
-	self.texts.prompt.font = self.promptFont
 end
 
 function MenuState:update(dt)

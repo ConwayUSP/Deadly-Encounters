@@ -24,9 +24,6 @@ BattleState.timer = BattleState.decisionTime * 2
 BattleState.turn = 1
 BattleState.hist = History.new()
 
-BattleState.fontPath = "assets/fonts"
-BattleState.fontName = "Cute Dino"
-
 -- para caso o jogo recomece
 function BattleState:reset()
 	self.texts = {}
@@ -85,12 +82,6 @@ function BattleState:newCounterText(txt)
 end
 
 function BattleState:load()
-	if resolvePath(self.fontPath, self.fontName, ".ttf") then
-		self.titleFont = love.graphics.newFont(resolvePath(self.fontPath, self.fontName, ".ttf"), 64)
-	else
-		self.titleFont = love.graphics.newFont(64)
-	end
-
 	local background = love.graphics.newImage("assets/UI/battle_bg.png")
 	self.sprites.bg = background
 end
