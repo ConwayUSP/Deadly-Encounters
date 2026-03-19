@@ -5,6 +5,7 @@ require("table")
 require("modules.constructors.buffs")
 require("modules.utils")
 require("modules.fs")
+require("modules.shaders")
 local Player = require("modules.player")
 
 ----------------------------------------
@@ -18,6 +19,7 @@ local DESCRIPTION_GAP = 60
 local DESCRIPTIONS_TOTAL_WIDTH = 0
 local DESCRIPTION_START_X = 0
 local PURCHASED_SLOT_SIZE = 60
+local SHADER = brightnessShader
 
 ----------------------------------------
 -- Entidade DescriptionCard
@@ -92,6 +94,7 @@ function ItemSlot.new(item, pos, index)
 	slot.position = pos or { x = 0, y = 0 }
 	slot.scale = 0.75
 	slot.buyed = false
+	slot.selected = false
 	
 	slot.rope = love.graphics.newImage("assets/UI/shop/rope_0"..index..".png")
 	slot.frame = love.graphics.newImage("assets/UI/shop/frame_0"..index..".png")
@@ -99,6 +102,7 @@ function ItemSlot.new(item, pos, index)
 	slot.ropeW = slot.rope:getWidth() * slot.scale
 	slot.ropeH = slot.rope:getHeight() * slot.scale
 	slot.frameW = slot.frame:getWidth() * slot.scale
+	slot.frameH = slot.frame:getHeight() * slot.scale
 
 	local itemW = item.sprite:getWidth() * slot.scale
 	local itemH = item.sprite:getHeight() * slot.scale
@@ -106,6 +110,7 @@ function ItemSlot.new(item, pos, index)
 	local y = pos.y + slot.ropeH - 20 + (slot.frameW - itemH) / 2
 
 	slot.itemPosition = { x = x, y = y }
+	slot.timer = 0
 	slot.gravity = 1000
 	slot.velocityY = -300
 	slot.velocityX = 100 * (math.random() < 0.5 and -1 or 1)
@@ -117,12 +122,44 @@ end
 function ItemSlot:draw()
 	love.graphics.setColor(1, 1, 1)
 
+	-- corda
 	love.graphics.draw(self.rope, self.position.x - self.ropeW / 2, self.position.y, 0, self.scale, self.scale)
-	love.graphics.draw(self.frame, self.position.x - self.frameW / 2, self.position.y + self.ropeH - 20, 0, self.scale, self.scale)
-	love.graphics.draw(self.item.sprite, self.itemPosition.x, self.itemPosition.y, 0, self.scale, self.scale)
+
+	local baseCenterX = self.position.x
+	local baseTopY = self.position.y + self.ropeH - 20
+
+	local bobOffset = 0
+	local t = self.timer
+	
+	love.graphics.setShader()
+	if self.selected then
+		-- love.graphics.setColor(1, 1, 1)
+		love.graphics.setShader(SHADER)
+		bobOffset = math.sin(t * 4) * 3
+	end
+
+	-- frame
+	love.graphics.draw(
+		self.frame,
+		baseCenterX - self.frameW / 2,
+		baseTopY,
+		0,
+		self.scale,
+		self.scale
+	)
+
+	-- item
+	love.graphics.draw(self.item.sprite, self.itemPosition.x, self.itemPosition.y + bobOffset, 0, self.scale, self.scale)
+	love.graphics.setShader()
 end
 
 function ItemSlot:update(dt)
+	if self.selected then
+		self.timer = self.timer + dt
+	else
+		self.timer = 0
+	end
+
 	if not self.buyed then
 		return
 	end
@@ -130,6 +167,16 @@ function ItemSlot:update(dt)
 	self.velocityY = self.velocityY + self.gravity * dt
 	self.itemPosition.y = self.itemPosition.y + self.velocityY * dt
 	self.itemPosition.x = self.itemPosition.x + self.velocityX * dt
+end
+
+function selectItemSlot(itemSlots, index)
+	for i, slot in ipairs(itemSlots) do
+		if i == index then
+			slot.selected = not slot.selected
+		else
+			slot.selected = false
+		end
+	end
 end
 
 ----------------------------------------
@@ -334,10 +381,13 @@ end
 function ShopState:keypressed(key, scancode, isrepeat)
 	if key == "1" then
 		self:selectItem(1)
+		selectItemSlot(self.slots, 1)
 	elseif key == "2" then
 		self:selectItem(2)
+		selectItemSlot(self.slots, 2)
 	elseif key == "3" then
 		self:selectItem(3)
+		selectItemSlot(self.slots, 3)
 	end
 
 	-- apenas para debug
@@ -369,9 +419,9 @@ function ShopState:selectItem(index)
 		self.selectedItemIndex = -1
 		return
 	end
+
 	if index >= 1 and index <= #self.itemsForSale then
 		self.selectedItemIndex = index
-		print("Selected item: " .. self.itemsForSale[index].id)
 	end
 end
 
