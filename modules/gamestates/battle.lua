@@ -2,6 +2,7 @@
 -- Importações de módulos
 ----------------------------------------
 require("modules.oponent")
+require("modules.history")
 require("modules.combat")
 require("modules.fs")
 
@@ -21,7 +22,7 @@ BattleState.oponent = BattleState.oponentPool[BattleState.battleNum]
 BattleState.decisionTime = 3
 BattleState.timer = BattleState.decisionTime * 2
 BattleState.turn = 1
-BattleState.hist = {}
+BattleState.hist = History.new()
 
 BattleState.fontPath = "assets/fonts"
 BattleState.fontName = "Cute Dino"
@@ -99,7 +100,7 @@ function BattleState:update(dt)
 	self.timer = pt - dt
 	if self.timer <= 0 then
 		self:simulaConfronto()
-		self.timer = self.decisionTime
+		self.timer = self.decisionTime + 0.001
 		self.texts = {}
 	end
 	if pt > 3 and self.timer < 3 then
