@@ -39,6 +39,15 @@ function Oponent.new(name, maxHP, maxCounters, items, upgrades, strategyFunc)
 	return oponent
 end
 
+function Oponent:hasItem(itemId)
+	for _, item in pairs(self.inventory.items) do
+		if item.id == itemId and item.quantity > 0 then
+			return true
+		end
+	end
+	return false
+end
+
 function Oponent:useBuff(buff)
 	if buff.quantity <= 0 then
 		return
