@@ -18,12 +18,26 @@ function Text.new(content, size, color, pos, rotation, centerOffset, lifetime, u
 	text.customUpdate = updateFunc
 	text.isOver = false
 	text.maxWidth = maxWidth
+	text.font = returnFont(size)
 
 	return text
 end
 
-function Text:update(dt)
-	self:customUpdate(dt)
+function Text:getDimensions()
+	local font = self.font or love.graphics.getFont()
+	local content = self.content or ""
+
+	if self.maxWidth then
+		local _, lines = font:getWrap(content, self.maxWidth)
+		local height = #lines * font:getHeight()
+		return self.maxWidth, height
+	else
+		return font:getWidth(content), font:getHeight()
+	end
+end
+
+function Text:update(dt, ...)
+	self:customUpdate(dt, ...)
 	self.timer = self.timer - dt
 	if self.timer <= 0 then
 		self.isOver = true
@@ -43,13 +57,7 @@ function Text:draw()
 	love.graphics.setFont(font)
 
 	local content = self.content or ""
-	local width
-	if self.maxWidth then
-		width = self.maxWidth
-	else
-		width = font:getWidth(content)
-	end
-	local height = font:getHeight()
+	local width, height = self:getDimensions()
 
 	local x = self.pos[1]
 	local y = self.pos[2]
