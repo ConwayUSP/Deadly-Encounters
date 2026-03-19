@@ -1,6 +1,7 @@
 ----------------------------------------
 -- Importações de Módulos
 ----------------------------------------
+math.randomseed(os.time()) -- precisa ficar aqui no topo pra randomizar os oponentes
 require("modules.actions")
 require("modules.gamectx")
 require("modules.gamestate")
@@ -27,7 +28,6 @@ end
 
 function love.load()
 	love.window.setFullscreen(true)
-	math.randomseed(os.time())
 
 	-- carrega o estado inicial
 	SetGameCtx(GameCtx)

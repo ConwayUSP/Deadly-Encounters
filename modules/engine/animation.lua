@@ -109,12 +109,11 @@ function initCreatureAnimations(creature)
 	creature.animations = {}
 	creature.spriteSheets = {}
 	-- todos os spritesheets terão o mesmo tamanho e apenas 1 frame
-	local spriteSize = { width = 256, height = 512 }
+	local spriteSize = { width = 600, height = 600 }
 	local animSettings = newAnimSetting(1, spriteSize, 0.1, true, 1)
 
 	-- adiciona os sprites e animações de cada ação (NONE vale como idle)
 	for k, state in pairs(ACTION) do
-		print(state)
 		local path = pngPathFormat({ "assets", creature.name, state })
 		addAnimation(creature, path, state, animSettings)
 	end

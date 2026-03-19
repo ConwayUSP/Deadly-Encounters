@@ -59,20 +59,20 @@ function BattleState:nextBattle()
 end
 
 -- simula um confronto entre o player e o oponente, atualizando o historico do combate
-function BattleState:simulaConfronto()
-	local resultadoTurno = simulaTurno(Player, self.oponent, self.hist)
+function BattleState:simulateBattle()
+	local resultadoTurno = simulateTurn(Player, self.oponent, self.hist)
 	self.hist:addSnapshot(Player)
 
-	if resultadoTurno == Combat.ONGOING then
+	if turnResult == Combat.ONGOING then
 		return
 	end
 
-	if resultadoTurno == Combat.WIN and BattleState.battleNum == 6 then
+	if turnResult == Combat.WIN and BattleState.battleNum == 6 then
 		-- ganhar a sexta batalha == vitória
 		SetGameCtx(CTX.VICTORY_SCREEN)
-	elseif resultadoTurno == Combat.LOSS then
+	elseif turnResult == Combat.LOSS then
 		SetGameCtx(CTX.DEATH_SCREEN)
-	elseif resultadoTurno == Combat.WIN then
+	elseif turnResult == Combat.WIN then
 		SetGameCtx(CTX.SHOP)
 	end
 end
@@ -99,7 +99,7 @@ function BattleState:update(dt)
 	local pt = self.timer
 	self.timer = pt - dt
 	if self.timer <= 0 then
-		self:simulaConfronto()
+		self:simulateBattle()
 		self.timer = self.decisionTime + 0.001
 		self.texts = {}
 	end
@@ -126,7 +126,7 @@ function BattleState:draw()
 
 	love.graphics.draw(self.sprites.bg)
 
-	for key, text in pairs(self.texts) do
+	for _, text in pairs(self.texts) do
 		text:draw()
 	end
 
@@ -149,6 +149,10 @@ function BattleState:keypressed(key, scancode, isrepeat)
 		SetGameCtx(CTX.SHOP)
 	end
 
+	local num = tonumber(key)
+	if num and num > 0 and num < 6 then
+		Player.action = ACTION_IDX[num]
+	end
 	-- TODO: lógica de decisão e poderes
 end
 

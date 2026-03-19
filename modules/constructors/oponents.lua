@@ -1,18 +1,18 @@
--- Aberration
+----------------------------------------
+-- Importações de módulos
+----------------------------------------
+require("modules.actions")
+
+----------------------------------------
+-- Importações de módulos
+----------------------------------------
+
+-- Aberração
 function initAberration()
 	-- Randomized powers and behaivor
 	local aberrationStrategy = function(self, player, turn, hist)
-		local actions = {
-			ACTION.RECHARGE,
-			ACTION.ATK,
-			ACTION.HEAVY_ATK,
-			ACTION.DEFENSE,
-			ACTION.COUNTER,
-			ACTION.MISS,
-		}
-
-		local i = math.random(6)
-		return actions[i]
+		local i = math.random(#ACTION_IDX)
+		return ACTION_IDX[i]
 	end
 
 	return Oponent.new("Aberracao", 200, 3, nil, nil, aberrationStrategy)
@@ -35,7 +35,7 @@ function initArchibald()
 	return Oponent.new("Archibald", 200, 3, nil, nil, archibaldStrategy)
 end
 
--- Devil
+-- Diabo
 function initDjabo()
 	-- is a cheater
 	-- Relies on counter-attacks
@@ -77,7 +77,7 @@ function initJoshua()
 	return Oponent.new("Joshua", 200, 3, nil, nil, joshuaStrategy)
 end
 
--- Pirate
+-- Pirata
 function initLarry()
 	-- Larry is a pirate
 	-- Relies on luck (has a totem)
@@ -94,7 +94,7 @@ function initLarry()
 	return Oponent.new("Larry", 200, 3, nil, nil, larryStrategy)
 end
 
--- Wizard
+-- Mago
 -- Its a healer and defender (has a potion and shield)
 -- Uses only heavy attacks
 function initOZard()
@@ -114,7 +114,7 @@ function initOZard()
 	return Oponent.new("O'Zard", 200, 3, nil, nil, ozardStrategy)
 end
 
--- Cowboy
+-- Cangaceiro
 function initSebastiao()
 	local sebastiaoStrategy = function(self, player, turn, hist)
 		if self.ammo < 1 then

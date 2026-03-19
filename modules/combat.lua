@@ -12,94 +12,89 @@ Combat.ONGOING = "inacabado"
 ----------------------------------------
 
 -- simula um turno do combate, retornando o resultado do combate após o turno
-function simulaTurno(player, oponente, historico)
-	oponente.action = oponente:makeDecision(player, historico)
+function simulateTurn(player, oponent, hist)
+	oponent.action = oponent:makeDecision(player, hist)
 
-	usaItems(player, oponente)
-	usaItems(oponente, player)
+	useItems(player, oponent)
+	useItems(oponent, player)
 
-	acao_player_invalida = validaAcao(player, historico)
-	acao_oponente_invalida = validaAcao(oponente, historico)
+	invalidPlayerAction = validateAction(player, hist)
+	invalidOponentAction = validateAction(oponent, hist)
 
 	-- acao player invalida == VACILO
-	if acao_player_invalida then
+	if invalidPlayerAction then
 		player.action = ACTION.MISS
 	end
 
-	-- acao oponente invalida == VACILO
-	if acao_oponente_invalida then
-		oponente.action = ACTION.MISS
+	-- acao oponent invalida == VACILO
+	if invalidOponentAction then
+		oponent.action = ACTION.MISS
 	end
 
-	realizaAcao(player, oponente)
-	realizaAcao(oponente, player)
+	applyAction(player, oponent)
+	applyAction(oponent, player)
 
-	return resultadoCombate(player, oponente)
+	return combatResult(player, oponent)
 end
 
 -- retorna true se a ação for inválida, false caso contrário
-function validaAcao(criatura, historico)
-	local acao = criatura.action
+function validateAction(creature, hist)
+	local action = creature.action
 
-	if acao == ACTION.ATK then
+	if action == ACTION.ATK then
 		-- sem munição suficiente
-		if criatura.ammo < 1 then
+		if creature.ammo < 1 then
 			return true
-		else
-			return false
 		end
-	elseif acao == ACTION.HEAVY_ATK then
+	elseif action == ACTION.HEAVY_ATK then
 		-- sem munição suficiente
-		if criatura.ammo < 2 then
+		if creature.ammo < 2 then
 			return true
-		else
-			return false
 		end
-	elseif acao == ACTION.COUNTER then
+	elseif action == ACTION.COUNTER then
 		-- sem contra-ataques restantes
-		if criatura.counters < 1 then
+		if creature.counters < 1 then
 			return true
-		else
-			return false
 		end
-	elseif acao == ACTION.DEFENSE then
-		-- TODO: analisar historico para valdar defesa
-		return false
+	elseif action == ACTION.DEFENSE then
+		if creature.defCount >= 2 then
+			return true
+		end
 	end
 
 	return false
 end
 
 --
-function realizaAcao(atacante, alvo)
-	local acaoAtacante = atacante.action
-	local acaoAlvo = alvo.action
+function applyAction(attacker, alvo)
+	local attackerAction = attacker.action
+	local targetAction = alvo.action
 
-	if acaoAtacante == ACTION.RECHARGE then
-		recarga(atacante)
-	elseif acaoAtacante == ACTION.ATK then
-		if acaoAlvo == ACTION.COUNTER then
-			ataque(atacante)
+	if attackerAction == ACTION.RECHARGE then
+		reload(attacker)
+	elseif attackerAction == ACTION.ATK then
+		if targetAction == ACTION.COUNTER then
+			attack(attacker)
 		else
-			ataque(alvo)
-			gastaMunicao(atacante)
+			attack(alvo)
+			spendAmmo(attacker)
 		end
-	elseif acaoAtacante == ACTION.HEAVY_ATK then
-		if acaoAlvo == ACTION.COUNTER then
-			ataquePesado(atacante)
+	elseif attackerAction == ACTION.HEAVY_ATK then
+		if targetAction == ACTION.COUNTER then
+			heavyAttack(attacker)
 		else
-			ataquePesado(alvo)
-			gastaMunicao(atacante)
+			heavyAttack(alvo)
+			spendAmmo(attacker)
 		end
-	elseif acaoAtacante == ACTION.COUNTER then
-		atacante.counters = atacante.counters - 1
+	elseif attackerAction == ACTION.COUNTER then
+		attacker.counters = attacker.counters - 1
 	end
 end
 
-function resultadoCombate(player, oponente)
+function combatResult(player, oponent)
 	if player.hp <= 0 then
 		return Combat.LOSS
-	elseif oponente.hp <= 0 then
+	elseif oponent.hp <= 0 then
 		return Combat.WIN
 	else
 		return Combat.ONGOING
@@ -107,10 +102,10 @@ function resultadoCombate(player, oponente)
 end
 
 -- ativa os itens que estão em usedItems
-function usaItems(creature, oponent)
+function useItems(creature, oponent)
 	for _, buff in pairs(creature.inventory.usedQueue) do
 		if buff.type == BUFF_TYPE.ITEM then
-			item:activate(creature, oponent)
+			buff:activate(creature, oponent)
 		end
 	end
 end
@@ -119,17 +114,17 @@ end
 -- Habilidades
 ----------------------------------------
 
-function recarga(criatura)
-	criatura.ammo = criatura.ammo + 1
+function reload(creature)
+	creature.ammo = creature.ammo + 1
 end
 
-function ataque(alvo)
+function attack(alvo)
 	if alvo.action ~= ACTION.DEFENSE then
 		alvo.hp = alvo.hp - 10
 	end
 end
 
-function ataquePesado(alvo)
+function heavyAttack(alvo)
 	if alvo.action ~= ACTION.DEFENSE then
 		alvo.hp = alvo.hp - 20
 	else
@@ -137,14 +132,14 @@ function ataquePesado(alvo)
 	end
 end
 
-function gastaMunicao(criatura)
-	if criatura.action == ACTION.ATK then
-		criatura.ammo = criatura.ammo - 1
-	elseif criatura.action == ACTION.HEAVY_ATK then
-		criatura.ammo = criatura.ammo - 2
+function spendAmmo(creature)
+	if creature.action == ACTION.ATK then
+		creature.ammo = creature.ammo - 1
+	elseif creature.action == ACTION.HEAVY_ATK then
+		creature.ammo = creature.ammo - 2
 	end
 end
 
-function cura(criatura)
-	criatura.hp = criatura.hp + 15
+function cure(creature)
+	creature.hp = creature.hp + 15
 end
