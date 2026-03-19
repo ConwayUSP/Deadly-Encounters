@@ -12,10 +12,12 @@ local Player = require("modules.player")
 ----------------------------------------
 
 local ITEMS_FOR_SALE = 3
-local DESCRIPTION_WIDTH = 300
-local DESCRIPTION_GAP = 10
-local DESCRIPTIONS_TOTAL_WIDTH = DESCRIPTION_WIDTH * ITEMS_FOR_SALE + DESCRIPTION_GAP * (ITEMS_FOR_SALE - 1)
-local DESCRIPTION_START_X = (love.graphics.getWidth() - DESCRIPTIONS_TOTAL_WIDTH) / 2
+local DESCRIPTION_WIDTH = 200
+local DESCRIPTION_Y = 510
+local DESCRIPTION_GAP = 60
+local DESCRIPTIONS_TOTAL_WIDTH = 0
+local DESCRIPTION_START_X = 0
+local PURCHASED_SLOT_SIZE = 60
 
 ----------------------------------------
 -- Entidade DescriptionCard
@@ -36,39 +38,15 @@ function DescriptionCard.new(item, pos)
 
 	card.item = item
 	card.type = item.type
-	card.title = Text.new(capitalize(item.id), 36, { 0, 0, 0, 1 }, { x, y }, nil, false, math.huge, updateFunc)
-	card.description = Text.new(
-		item.description,
-		18,
-		{ 0, 0, 0, 1 },
-		{ x, y + 30 },
-		nil,
-		false,
-		math.huge,
-		updateFunc,
-		DESCRIPTION_WIDTH
-	)
+	card.title = Text.new(capitalize(item.id), 24, { 1, 1, 1, 1 }, { x, y }, nil, false, math.huge, updateFunc)
+	card.description = Text.new(item.description, 16, { 1, 1, 1, 1 }, { x, y + 30 }, nil, false, math.huge, updateFunc, DESCRIPTION_WIDTH)
 
-	-- configura label e cores da badge como Text também
-	local badgeLabel
-	local badgeBgColor
-	local badgeBorderColor
-	if card.type == BUFF_TYPE.UPGRADE then
-		badgeLabel = "Upgrade"
-		badgeBgColor = { 0.80, 0.90, 1.00 }
-		badgeBorderColor = { 0.30, 0.45, 0.70 }
-	elseif card.type == BUFF_TYPE.ITEM then
-		badgeLabel = "Item"
-		badgeBgColor = { 0.85, 1.00, 0.85 }
-		badgeBorderColor = { 0.30, 0.60, 0.30 }
-	end
-	card.badgeBgColor = badgeBgColor
-	card.badgeBorderColor = badgeBorderColor
-	card.badgeText = Text.new(badgeLabel, 18, { 0.10, 0.08, 0.05, 1 }, { 0, 0 }, nil, false, math.huge, updateFunc)
+	card.scale = 0.55
+	card.bg = love.graphics.newImage("assets/UI/shop/description_"..item.type..".png")
 
-	card.position = pos or { x = 0, y = 0 }
+	card.position = { x = pos.x - 20 or 0, y = pos.y - 60 or 0 }
 	card.alpha = 0
-	card.fadeDuration = 0.3
+	card.fadeDuration = 0.2
 	return card
 end
 
@@ -92,42 +70,106 @@ function DescriptionCard:draw()
 	if self.alpha <= 0 then
 		return
 	end
-	-- fundo card
-	love.graphics.setColor(0.55, 0.40, 0.25, self.alpha)
-	love.graphics.rectangle("fill", self.position.x - 10, self.position.y - 10, DESCRIPTION_WIDTH + 20, 200, 12, 12, 16)
 
-	-- borda do card
-	love.graphics.setColor(0.30, 0.20, 0.10, self.alpha)
-	love.graphics.setLineWidth(2)
-	love.graphics.rectangle("line", self.position.x - 10, self.position.y - 10, DESCRIPTION_WIDTH + 20, 200, 12, 12, 16)
+	love.graphics.setColor(1, 1, 1, self.alpha)
+	love.graphics.draw(self.bg, self.position.x, self.position.y, 0, self.scale, self.scale)
 
-	-- badge para TIPO (upgrade/item)
-	local badgeText = self.badgeText
-	local label = badgeText.content or ""
-	local bgColor = self.badgeBgColor or { 1, 1, 1 }
-	local borderColor = self.badgeBorderColor or { 0, 0, 0 }
-	local badgeX = self.position.x - 6
-	local badgeY = self.position.y - 46
-	local font = badgeText.font or love.graphics.getFont()
-	local textWidth = font:getWidth(label)
-	local horizontalPadding = 16
-	local badgeW = textWidth + horizontalPadding
-	local badgeH = 28
-
-	-- fundo badge
-	love.graphics.setColor(bgColor[1], bgColor[2], bgColor[3], self.alpha)
-	love.graphics.rectangle("fill", badgeX, badgeY, badgeW, badgeH, 8, 8, 8)
-
-	-- borda badge
-	love.graphics.setColor(borderColor[1], borderColor[2], borderColor[3], self.alpha)
-	love.graphics.setLineWidth(1.5)
-	love.graphics.rectangle("line", badgeX, badgeY, badgeW, badgeH, 8, 8, 8)
-
-	badgeText.pos = { badgeX + 8, badgeY + 6 }
-	badgeText:draw()
-
+	love.graphics.setColor(1, 1, 1)
 	self.title:draw(self.position.x, self.position.y)
 	self.description:draw(self.position.x, self.position.y)
+end
+
+----------------------------------------
+-- Entidade ItemSlot
+----------------------------------------
+
+local ItemSlot = {}
+ItemSlot.__index = ItemSlot
+
+function ItemSlot.new(item, pos, index)
+	local slot = setmetatable({}, ItemSlot)
+	slot.item = item
+	slot.position = pos or { x = 0, y = 0 }
+	slot.scale = 0.75
+	slot.buyed = false
+	
+	slot.rope = love.graphics.newImage("assets/UI/shop/rope_0"..index..".png")
+	slot.frame = love.graphics.newImage("assets/UI/shop/frame_0"..index..".png")
+	
+	slot.ropeW = slot.rope:getWidth() * slot.scale
+	slot.ropeH = slot.rope:getHeight() * slot.scale
+	slot.frameW = slot.frame:getWidth() * slot.scale
+
+	local itemW = item.sprite:getWidth() * slot.scale
+	local itemH = item.sprite:getHeight() * slot.scale
+	local x = pos.x - itemW / 2
+	local y = pos.y + slot.ropeH - 20 + (slot.frameW - itemH) / 2
+
+	slot.itemPosition = { x = x, y = y }
+	slot.gravity = 1000
+	slot.velocityY = -300
+	slot.velocityX = 100 * (math.random() < 0.5 and -1 or 1)
+
+	return slot
+	
+end
+
+function ItemSlot:draw()
+	love.graphics.setColor(1, 1, 1)
+
+	love.graphics.draw(self.rope, self.position.x - self.ropeW / 2, self.position.y, 0, self.scale, self.scale)
+	love.graphics.draw(self.frame, self.position.x - self.frameW / 2, self.position.y + self.ropeH - 20, 0, self.scale, self.scale)
+	love.graphics.draw(self.item.sprite, self.itemPosition.x, self.itemPosition.y, 0, self.scale, self.scale)
+end
+
+function ItemSlot:update(dt)
+	if not self.buyed then
+		return
+	end
+
+	self.velocityY = self.velocityY + self.gravity * dt
+	self.itemPosition.y = self.itemPosition.y + self.velocityY * dt
+	self.itemPosition.x = self.itemPosition.x + self.velocityX * dt
+end
+
+----------------------------------------
+-- Entidade PurchasedSlot
+----------------------------------------
+
+PurchasedSlot = {}
+PurchasedSlot.__index = PurchasedSlot
+
+function PurchasedSlot.new(item, pos)
+	local slot = setmetatable({}, PurchasedSlot)
+	slot.item = item
+	slot.position = pos or { x = 0, y = 0 }
+	slot.scale = 0.25
+	slot.rectSize = PURCHASED_SLOT_SIZE
+	return slot
+end
+
+function PurchasedSlot:draw()
+	local half = self.rectSize / 2
+
+	-- fundo do slot
+	love.graphics.setColor(0.277, 0.242, 0.261, 1)
+	love.graphics.rectangle("fill", self.position.x - half, self.position.y - half, self.rectSize, self.rectSize, 8, 8)
+
+	-- item centralizado
+	love.graphics.setColor(1, 1, 1)
+	local spriteW = self.item.sprite:getWidth() * self.scale
+	local spriteH = self.item.sprite:getHeight() * self.scale
+	local itemX = self.position.x - spriteW / 2
+	local itemY = self.position.y - spriteH / 2
+	love.graphics.draw(self.item.sprite, itemX, itemY, 0, self.scale, self.scale)
+end
+
+function PurchasedSlot:addItem(item)
+	if item.type == BUFF_TYPE.UPGRADE then
+		return
+	end
+
+	self.item = item
 end
 
 ----------------------------------------
@@ -152,20 +194,75 @@ ShopState.sprites = {}
 ShopState.texts = {}
 ShopState.itemsForSale = {}
 ShopState.selectedItemIndex = 1
+ShopState.buyed = false
+ShopState.buyedIndex = -1
 ShopState.descriptionCards = {}
+ShopState.purchasedSlots = {}
+ShopState.timer = 0
+ShopState.slots = {}
 ShopState.font = nil
 
-function ShopState:load()
-	self:reset()
+function ShopState:setPurchasedSlots(items)
+	self.purchasedSlots = {}
 
-	self.font = returnFont(24)
+	local count = #items
+	if count == 0 then return end
+
+	local rectSize = PURCHASED_SLOT_SIZE
+	local gap = 10
+	local totalWidth = rectSize * count + gap * (count - 1)
+	local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
+	local startX = (screenW - totalWidth) / 2 + rectSize / 2
+	local y = screenH - 80
+
+	for i, item in ipairs(items) do
+		local x = startX + (i - 1) * (rectSize + gap)
+		local purchasedSlot = PurchasedSlot.new(item, { x = x, y = y })
+		purchasedSlot.rectSize = rectSize
+		table.insert(self.purchasedSlots, purchasedSlot)
+	end
+end
+
+function ShopState:load()
+	local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
+	self.sprites.bg = love.graphics.newImage("assets/UI/shop/market_bg.jpg")
+	self.sprites.sign = love.graphics.newImage("assets/UI/shop/plate.png")
+	self.sprites.bag = love.graphics.newImage("assets/UI/shop/bag.png")
+
+	local function blinkUpdate(text, dt)
+		local alpha = text.color[4] or 1
+		alpha = alpha + dt * 0.5
+		if alpha > 1 then
+			alpha = 0.5
+		end
+		text.color[4] = alpha
+	end
+
+	local padding = 30
+	local xOffset = 150
+	self.texts.warning = Text.new("Press space to buy", 24, { 1, 1, 1, 1 }, { screenW - xOffset, screenH - padding }, nil, true, math.huge, blinkUpdate)
+
+	DESCRIPTIONS_TOTAL_WIDTH = DESCRIPTION_WIDTH * ITEMS_FOR_SALE + DESCRIPTION_GAP * (ITEMS_FOR_SALE - 1)
+	DESCRIPTION_START_X = (screenW - DESCRIPTIONS_TOTAL_WIDTH) / 2
+
+	Player:getBuff(initShield())
+	Player:getBuff(initPotion())
+	-- Player:getBuff(initEnergyDrink())
+	-- Player:getBuff(initFlashbang())
+
+	self:reset()
 end
 
 -- reinicia a loja, limpando os itens à venda e sorteando novos
 function ShopState:reset()
 	self.itemsForSale = {}
+	self.slots = {}
+	self.timer = 0
 	self.descriptionCards = {}
 	self.selectedItemIndex = -1
+	self.buyed = false
+	self.buyedIndex = -1
+	self:setPurchasedSlots(Player.inventory.items)
 	self:randomizeItems()
 end
 
@@ -178,14 +275,21 @@ function ShopState:randomizeItems()
 		if not pickedIndexes[index] then
 			pickedIndexes[index] = true
 			pickedCount = pickedCount + 1
-
-			local x = DESCRIPTION_START_X + pickedCount * (DESCRIPTION_WIDTH + DESCRIPTION_GAP)
-			local y = 300
-
-			local desc = DescriptionCard.new(self.allItems[index], { x = x, y = y })
-
+			
 			table.insert(self.itemsForSale, self.allItems[index])
+
+			-- coluna centralizada
+			local columnCenterX = (DESCRIPTION_START_X + DESCRIPTION_WIDTH / 2) + (pickedCount - 1) * (DESCRIPTION_WIDTH + DESCRIPTION_GAP)
+
+			-- descrição
+			local descX = columnCenterX - DESCRIPTION_WIDTH / 2
+			local descY = DESCRIPTION_Y + (pickedCount == 2 and 60 or 0)
+			local desc = DescriptionCard.new(self.allItems[index], { x = descX, y = descY })
 			table.insert(self.descriptionCards, desc)
+
+			-- slot
+			local slot = ItemSlot.new(self.allItems[index], { x = columnCenterX, y = 0 }, pickedCount)
+			table.insert(self.slots, slot)
 		end
 	end
 end
@@ -200,11 +304,30 @@ function ShopState:buyItem(item)
 			break
 		end
 	end
+
+	self.slots[self.selectedItemIndex].buyed = true
+	self.buyedIndex = self.selectedItemIndex
 end
 
 function ShopState:update(dt)
 	for i, card in ipairs(self.descriptionCards) do
 		card:update(dt, i == self.selectedItemIndex)
+	end
+
+	for _, slot in ipairs(self.slots) do
+		slot:update(dt)
+	end
+
+	for _, text in pairs(self.texts) do
+		text:update(dt)
+	end
+
+	if self.timer > 0 then
+		self.timer = self.timer - dt
+	end
+
+	if self.timer <= 0 and self.buyed then
+		SetGameCtx(CTX.BATTLE)
 	end
 end
 
@@ -228,12 +351,20 @@ function ShopState:keypressed(key, scancode, isrepeat)
 			self:buyItem(selectedItem)
 		end
 
-		SetGameCtx(CTX.BATTLE)
+		self:setPurchasedSlots(Player.inventory.items)
+		self.buyed = true
+		self.selectedItemIndex = -1
+		self.timer = 2
 	end
 end
 
 -- seleciona um dos itens dispoíveis para compra
 function ShopState:selectItem(index)
+
+	if self.buyed then
+		return
+	end
+	
 	if index == self.selectedItemIndex then
 		self.selectedItemIndex = -1
 		return
@@ -248,14 +379,49 @@ function ShopState:draw()
 	-- fundo em tom bege suave
 	love.graphics.clear(0.95, 0.90, 0.80)
 
-	love.graphics.setFont(self.font)
-	love.graphics.setColor(0, 0, 0)
-	love.graphics.print("Mercadinho", 50, 50)
+	local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
 
+	-- background
+	local bg = self.sprites.bg
+	local bgW, bgH = bg:getWidth(), bg:getHeight()
+	local scale = math.max(screenW / bgW, screenH / bgH)
+	local drawX = (screenW - bgW * scale) / 2
+	local drawY = (screenH - bgH * scale) / 2
+	love.graphics.draw(bg, drawX, drawY, 0, scale, scale)
+	
+	-- bolsa
+	local bag = self.sprites.bag
+	local bagScale = 0.7
+	local bagW = bag:getWidth() * bagScale
+	local screenHeight = love.graphics.getHeight()
+	local bagY = screenHeight - bag:getHeight() * bagScale - 30
+	love.graphics.draw(bag, (screenW - bagW) / 2, bagY, 0, bagScale, bagScale)
+
+	-- items possuidos
+	for _, slot in ipairs(self.purchasedSlots) do
+		slot:draw()
+	end
+
+	-- slots dos itens
+	for _, slot in ipairs(self.slots) do
+		slot:draw()
+	end
+
+	-- placa
+	local sign = self.sprites.sign
+	local signScale = 0.75
+	local signW = sign:getWidth() * signScale
+	love.graphics.draw(sign, (screenW - signW) / 2, 40, 0, signScale, signScale)
+
+	-- descrições
 	for i, card in ipairs(self.descriptionCards) do
 		if i == self.selectedItemIndex then
 			card:draw()
 		end
+	end
+
+	for _, text in pairs(self.texts) do
+		text:draw()
 	end
 
 	-- reset de cor
