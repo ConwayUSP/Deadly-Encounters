@@ -141,14 +141,32 @@ end
 
 -- Detecta o input do usuário
 function BattleState:keypressed(key, scancode, isrepeat)
-	-- TODO: remover isso
-	if key == "return" or key == "space" then
-		SetGameCtx(CTX.VICTORY_SCREEN)
-	elseif key == "s" then
-		SetGameCtx(CTX.SHOP)
-	end
-
-	-- TODO: lógica de decisão e poderes
+    -- TODO: selecionar acao
+    if key == "1" then
+        -- attack
+        Player.action = ACTION.ATK
+    elseif key == "2" then
+        -- defense
+        Player.action = ACTION.DEFENSE
+    elseif key == "3" then
+        -- recharge
+        Player.action = ACTION.RECHARGE
+    elseif key == "4" then
+        -- heavy attack
+        Player.action = ACTION.HEAVY_ATK
+    elseif key == "5" then
+        -- counter
+        Player.action = ACTION.COUNTER
+    elseif key == "6" then
+        -- use item 1
+        -- Player.useBuff()
+    elseif key == "7" then
+        -- use item 2
+        -- Player.useBuff()
+    elseif key == "8" then
+        -- use item 3
+        -- Player.useBuff()
+    end
 end
 
 return BattleState
