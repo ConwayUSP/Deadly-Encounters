@@ -249,7 +249,7 @@ ShopState.allItems = {
 ShopState.sprites = {}
 ShopState.texts = {}
 ShopState.itemsForSale = {}
-ShopState.selectedItemIndex = 1
+ShopState.selectedItemIndex = 0
 ShopState.buyed = false
 ShopState.buyedIndex = -1
 ShopState.descriptionCards = {}
@@ -420,12 +420,11 @@ function ShopState:keypressed(key, scancode, isrepeat)
 		local selectedItem = self.itemsForSale[self.selectedItemIndex]
 		if selectedItem then
 			self:buyItem(selectedItem)
+			self:setPurchasedSlots(Player.inventory.items)
+			self.buyed = true
+			self.selectedItemIndex = 0
+			self.timer = 2
 		end
-
-		self:setPurchasedSlots(Player.inventory.items)
-		self.buyed = true
-		self.selectedItemIndex = -1
-		self.timer = 2
 	end
 end
 
@@ -436,11 +435,11 @@ function ShopState:selectItem(index)
 	end
 
 	if index == self.selectedItemIndex then
-		self.selectedItemIndex = -1
+		self.selectedItemIndex = 0
 		return
 	end
 
-	if index >= 1 and index <= #self.itemsForSale then
+	if self.selectedItemIndex == 0 or index >= 1 and index <= #self.itemsForSale then
 		self.selectedItemIndex = index
 	end
 end
@@ -499,4 +498,3 @@ function ShopState:draw()
 end
 
 return ShopState
-
