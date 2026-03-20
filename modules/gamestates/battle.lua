@@ -4,6 +4,7 @@
 require("modules.oponent")
 require("modules.history")
 require("modules.combat")
+require("modules.actions")
 require("modules.fs")
 
 ----------------------------------------
@@ -16,6 +17,7 @@ BattleState.__index = BattleState
 -- TODO: preencher o estado
 BattleState.sprites = {}
 BattleState.texts = {}
+BattleState.sounds = {}
 BattleState.oponentPool = generateOponentPool()
 BattleState.battleNum = 1
 BattleState.oponent = BattleState.oponentPool[BattleState.battleNum]
@@ -57,7 +59,7 @@ end
 
 -- simula um confronto entre o player e o oponente, atualizando o historico do combate
 function BattleState:simulateBattle()
-	local resultadoTurno = simulateTurn(Player, self.oponent, self.hist)
+	local turnResult = simulateTurn(Player, self.oponent, self.hist)
 	self.hist:addSnapshot(Player)
 
 	print(resultadoTurno)
@@ -86,24 +88,36 @@ end
 function BattleState:load()
 	local background = love.graphics.newImage("assets/UI/battle_bg.png")
 	self.sprites.bg = background
+
+	-- sounds
+	self.sounds.counter3 = love.audio.newSource("sounds/counter_3.mp3", "static")
+	self.sounds.counter2 = love.audio.newSource("sounds/counter_2.mp3", "static")
+	self.sounds.counter1 = love.audio.newSource("sounds/counter_1.mp3", "static")
+	self.sounds.counterShoot = love.audio.newSource("sounds/counter_shoot.mp3", "static")
 end
 
 function BattleState:update(dt)
 	local pt = self.timer
 	self.timer = pt - dt
 	if self.timer <= 0 then
+		self.texts.counterShoot = self:newCounterText("SHOOT!")
+		self.sounds.counterShoot:play()
+
 		self:simulateBattle()
-		self.timer = self.decisionTime + 0.001
-		self.texts = {}
+		self.timer = self.decisionTime + 2
+		-- self.texts = {}
 	end
 	if pt > 3 and self.timer < 3 then
 		self.texts.counter3 = self:newCounterText("3")
+		self.sounds.counter3:play()
 	end
 	if pt > 2 and self.timer < 2 then
 		self.texts.counter2 = self:newCounterText("2")
+		self.sounds.counter2:play()
 	end
 	if pt > 1 and self.timer < 1 then
 		self.texts.counter1 = self:newCounterText("1")
+		self.sounds.counter1:play()
 	end
 
 	for _, text in pairs(self.texts) do

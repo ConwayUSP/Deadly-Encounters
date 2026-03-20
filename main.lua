@@ -12,26 +12,45 @@ Player = require("modules.player")
 
 GameCtx = CTX.MENU
 
+local Transition = require("modules.engine.transition")
+MainTransition = Transition.new(0.5, Transition.FADEINOUT)
+
 -- Função auxiliar para trocar de contexto e carregar o novo estado
--- TODO: inserir transição
 function SetGameCtx(newCtx)
-	GameCtx = newCtx
-	GAMESTATE[GameCtx]:load()
+	local sounds = GAMESTATE[GameCtx].sounds
+	if sounds then
+		for _, sound in pairs(sounds) do
+			sound:stop()
+		end
+	end
+
+	MainTransition:start(function()
+		GameCtx = newCtx
+		GAMESTATE[GameCtx]:load()
+	end)
 end
 
 function love.load()
 	love.window.setFullscreen(true)
 
-	-- carrega o estado inicial
-	SetGameCtx(GameCtx)
+	-- carrega o estado inicial manualmente para usar uma transição
+	for _, state in pairs(GAMESTATE) do
+		state:load()
+	end
 end
 
 function love.update(dt)
+	MainTransition:update(dt)
+	-- do not update the scene while transition is running
+	if MainTransition.isActive then
+		return
+	end
 	GAMESTATE[GameCtx]:update(dt)
 end
 
 function love.draw()
 	GAMESTATE[GameCtx]:draw()
+	MainTransition:draw()
 end
 
 function love.keypressed(key, scancode, isrepeat)

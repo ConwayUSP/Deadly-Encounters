@@ -178,16 +178,6 @@ function ItemSlot:update(dt)
 	self.itemPosition.x = self.itemPosition.x + self.velocityX * dt
 end
 
-function selectItemSlot(itemSlots, index)
-	for i, slot in ipairs(itemSlots) do
-		if i == index then
-			slot.selected = not slot.selected
-		else
-			slot.selected = false
-		end
-	end
-end
-
 ----------------------------------------
 -- Entidade PurchasedSlot
 ----------------------------------------
@@ -248,6 +238,7 @@ ShopState.allItems = {
 }
 ShopState.sprites = {}
 ShopState.texts = {}
+ShopState.sounds = {}
 ShopState.itemsForSale = {}
 ShopState.selectedItemIndex = 0
 ShopState.buyed = false
@@ -286,6 +277,21 @@ function ShopState:load()
 	self.sprites.bg = love.graphics.newImage("assets/UI/shop/market_bg.jpg")
 	self.sprites.sign = love.graphics.newImage("assets/UI/shop/plate.png")
 	self.sprites.bag = love.graphics.newImage("assets/UI/shop/bag.png")
+
+	-- sounds
+	self.sounds.buy = love.audio.newSource("sounds/buy_00.wav", "static")
+	self.sounds.select = love.audio.newSource("sounds/select.wav", "static")
+	self.sounds.bell = love.audio.newSource("sounds/shop_bell.wav", "static")
+	self.sounds.bg = love.audio.newSource("sounds/shop_bg.mp3", "stream")
+
+	self.sounds.buy:setVolume(0.35)
+	self.sounds.bell:setVolume(0.8)
+
+	self.sounds.bg:play()
+	self.sounds.bg:setLooping(true)
+	self.sounds.bg:setVolume(0.3)
+
+	self.sounds.bell:play()
 
 	local function blinkUpdate(text, dt)
 		local alpha = text.color[4] or 1
@@ -399,16 +405,29 @@ function ShopState:update(dt)
 	end
 end
 
+function ShopState:selectItemSlot(index)
+	if self.buyed then
+		return
+	end
+	for i, slot in ipairs(self.slots) do
+		if i == index then
+			slot.selected = not slot.selected
+		else
+			slot.selected = false
+		end
+	end
+end
+
 function ShopState:keypressed(key, scancode, isrepeat)
 	if key == "1" then
 		self:selectItem(1)
-		selectItemSlot(self.slots, 1)
+		self:selectItemSlot(1)
 	elseif key == "2" then
 		self:selectItem(2)
-		selectItemSlot(self.slots, 2)
+		self:selectItemSlot(2)
 	elseif key == "3" then
 		self:selectItem(3)
-		selectItemSlot(self.slots, 3)
+		self:selectItemSlot(3)
 	end
 
 	-- apenas para debug
@@ -424,6 +443,7 @@ function ShopState:keypressed(key, scancode, isrepeat)
 			self.buyed = true
 			self.selectedItemIndex = 0
 			self.timer = 2
+			self.sounds.buy:play()
 		end
 	end
 end
@@ -433,6 +453,8 @@ function ShopState:selectItem(index)
 	if self.buyed then
 		return
 	end
+
+	self.sounds.select:play()
 
 	if index == self.selectedItemIndex then
 		self.selectedItemIndex = 0

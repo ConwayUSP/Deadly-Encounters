@@ -121,17 +121,14 @@ end
 function attack(alvo)
 	if alvo.action ~= ACTION.DEFENSE then
 		alvo.hp = alvo.hp - 40
-		print(alvo.hp)
 	end
 end
 
 function heavyAttack(alvo)
 	if alvo.action ~= ACTION.DEFENSE then
 		alvo.hp = alvo.hp - 80
-		print(alvo.hp)
 	else
 		alvo.hp = alvo.hp - 30
-		print(alvo.hp)
 	end
 end
 
