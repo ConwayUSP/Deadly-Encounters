@@ -169,16 +169,6 @@ function ItemSlot:update(dt)
 	self.itemPosition.x = self.itemPosition.x + self.velocityX * dt
 end
 
-function selectItemSlot(itemSlots, index)
-	for i, slot in ipairs(itemSlots) do
-		if i == index then
-			slot.selected = not slot.selected
-		else
-			slot.selected = false
-		end
-	end
-end
-
 ----------------------------------------
 -- Entidade PurchasedSlot
 ----------------------------------------
@@ -378,16 +368,29 @@ function ShopState:update(dt)
 	end
 end
 
+function ShopState:selectItemSlot(index)
+	if self.buyed then
+		return
+	end
+	for i, slot in ipairs(self.slots) do
+		if i == index then
+			slot.selected = not slot.selected
+		else
+			slot.selected = false
+		end
+	end
+end
+
 function ShopState:keypressed(key, scancode, isrepeat)
 	if key == "1" then
 		self:selectItem(1)
-		selectItemSlot(self.slots, 1)
+		self:selectItemSlot(1)
 	elseif key == "2" then
 		self:selectItem(2)
-		selectItemSlot(self.slots, 2)
+		self:selectItemSlot(2)
 	elseif key == "3" then
 		self:selectItem(3)
-		selectItemSlot(self.slots, 3)
+		self:selectItemSlot(3)
 	end
 
 	-- apenas para debug
@@ -402,6 +405,7 @@ function ShopState:keypressed(key, scancode, isrepeat)
 		end
 
 		self:setPurchasedSlots(Player.inventory.items)
+		self:selectItemSlot(self.buyedIndex)
 		self.buyed = true
 		self.selectedItemIndex = -1
 		self.timer = 2

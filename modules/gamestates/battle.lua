@@ -4,6 +4,7 @@
 require("modules.oponent")
 require("modules.history")
 require("modules.combat")
+require("modules.actions")
 require("modules.fs")
 
 ----------------------------------------
@@ -57,7 +58,7 @@ end
 
 -- simula um confronto entre o player e o oponente, atualizando o historico do combate
 function BattleState:simulateBattle()
-	local resultadoTurno = simulateTurn(Player, self.oponent, self.hist)
+	local turnResult = simulateTurn(Player, self.oponent, self.hist)
 	self.hist:addSnapshot(Player)
 
 	if turnResult == Combat.ONGOING then
