@@ -62,17 +62,16 @@ function MenuState:load()
 end
 
 function MenuState:update(dt)
-
 	if self.timer > 0 then
 		self.timer = self.timer - dt
 		if self.timer <= 0 then
 			SetGameCtx(CTX.BATTLE)
 		end
 	end
-	
+
 	self.texts.title:update(dt)
-	self.texts.prompt:update(self.timer > 0 and 6*dt or dt)
-	
+	self.texts.prompt:update(self.timer > 0 and 6 * dt or dt)
+
 	cleanUpTexts(self.texts)
 end
 

@@ -401,6 +401,7 @@ function ShopState:update(dt)
 	end
 
 	if self.timer <= 0 and self.buyed then
+		GAMESTATE[CTX.BATTLE]:nextBattle()
 		SetGameCtx(CTX.BATTLE)
 	end
 end

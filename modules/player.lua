@@ -24,6 +24,17 @@ Player.action = ACTION.NONE
 Player.inventory = Inventory.new()
 initCreatureAnimations(Player)
 
+function Player:reset()
+	Player.hp = Player.maxHp
+	Player.maxCounters = 3
+	Player.counters = Player.maxCounters
+	Player.ammo = 0
+	Player.defCount = 0
+	Player.dmgMult = 1
+	Player.action = ACTION.NONE
+	Player.inventory = Inventory.new()
+end
+
 function Player:resetForBattle()
 	self.hp = self.maxHp
 	self.counters = self.maxCounters
@@ -34,7 +45,7 @@ function Player:resetForBattle()
 
 	for _, upgrade in pairs(self.inventory.upgrades) do
 		if upgrade.onStart then
-			upgrade:active(self)
+			upgrade:activate(self)
 		end
 	end
 

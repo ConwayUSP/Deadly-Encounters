@@ -90,6 +90,7 @@ end
 
 function FinalScreen:keypressed(key, scancode, isrepeat)
 	if key == "return" or key == "space" then
+		GAMESTATE[CTX.BATTLE]:restartGame()
 		SetGameCtx(CTX.MENU)
 	end
 end

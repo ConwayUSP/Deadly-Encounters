@@ -39,7 +39,14 @@ function ItemSlot:draw()
 		local itemSprite = item.sprite
 		local itemW = itemSprite:getWidth() * itemScale
 		local itemH = itemSprite:getHeight() * itemScale
-		love.graphics.draw(itemSprite, self.pos[1] + socketW/4 - itemW/2 - 8, self.pos[2] - itemH / 2, 0, itemScale, itemScale)
+		love.graphics.draw(
+			itemSprite,
+			self.pos[1] + socketW / 4 - itemW / 2 - 8,
+			self.pos[2] - itemH / 2,
+			0,
+			itemScale,
+			itemScale
+		)
 	end
 
 	if self.items[2] then
@@ -47,15 +54,29 @@ function ItemSlot:draw()
 		local itemSprite = item.sprite
 		local itemW = itemSprite:getWidth() * itemScale
 		local itemH = itemSprite:getHeight() * itemScale
-		love.graphics.draw(itemSprite, self.pos[1] - socketW/4 - itemW/2 + 4, self.pos[2] - itemH/2 - socketH/4 + 8, 0, itemScale, itemScale)
+		love.graphics.draw(
+			itemSprite,
+			self.pos[1] - socketW / 4 - itemW / 2 + 4,
+			self.pos[2] - itemH / 2 - socketH / 4 + 8,
+			0,
+			itemScale,
+			itemScale
+		)
 	end
 
-		if self.items[3] then
+	if self.items[3] then
 		local item = self.items[3]
 		local itemSprite = item.sprite
 		local itemW = itemSprite:getWidth() * itemScale
 		local itemH = itemSprite:getHeight() * itemScale
-		love.graphics.draw(itemSprite, self.pos[1] - socketW/4 - itemW/2 + 4, self.pos[2] - itemH/2 + socketH/4, 0, itemScale, itemScale)
+		love.graphics.draw(
+			itemSprite,
+			self.pos[1] - socketW / 4 - itemW / 2 + 4,
+			self.pos[2] - itemH / 2 + socketH / 4,
+			0,
+			itemScale,
+			itemScale
+		)
 	end
 
 	-- reset de cor
@@ -98,7 +119,14 @@ function ActionSlot:draw()
 	local actionH = self.actionSprite:getHeight() * self.scale
 
 	love.graphics.draw(self.socket, self.pos[1] - socketW / 2, self.pos[2] - socketH / 2, 0, self.scale, self.scale)
-	love.graphics.draw(self.actionSprite, self.pos[1] - actionW / 2, self.pos[2] - actionH / 2, 0, self.scale, self.scale)
+	love.graphics.draw(
+		self.actionSprite,
+		self.pos[1] - actionW / 2,
+		self.pos[2] - actionH / 2,
+		0,
+		self.scale,
+		self.scale
+	)
 
 	if self.active then
 		love.graphics.setShader()
@@ -119,8 +147,8 @@ function HealthBar.new(creature, pos, who)
 	healthBar.scale = 0.72
 
 	healthBar.empty = love.graphics.newImage("assets/UI/combat/empty_healthbar.png")
-	healthBar.full = love.graphics.newImage("assets/UI/combat/"..who.."_healthbar.png")
-	
+	healthBar.full = love.graphics.newImage("assets/UI/combat/" .. who .. "_healthbar.png")
+
 	return healthBar
 end
 
@@ -137,7 +165,12 @@ function HealthBar:draw()
 	local barWidth = emptyW * hpRatio
 	local offset = 0
 
-	love.graphics.setScissor(self.pos[1] - emptyW / 2 + offset, self.pos[2], barWidth, self.full:getHeight() * self.scale)
+	love.graphics.setScissor(
+		self.pos[1] - emptyW / 2 + offset,
+		self.pos[2],
+		barWidth,
+		self.full:getHeight() * self.scale
+	)
 	love.graphics.draw(self.full, self.pos[1] - emptyW / 2, self.pos[2], 0, self.scale, self.scale)
 	love.graphics.setScissor()
 
@@ -166,9 +199,9 @@ end
 function UpgradesOwned:draw()
 	local x, y = self.pos[1], self.pos[2]
 	local spacing = 0
-	local size = self.upgrades[1] and self.upgrades[1].sprite:getWidth() * self.scale or 0 
+	local size = self.upgrades[1] and self.upgrades[1].sprite:getWidth() * self.scale or 0
 	for i, upgrade in ipairs(self.upgrades) do
-		x = x + (self.direction) * (size + spacing) * (i - 1)
+		x = x + self.direction * (size + spacing) * (i - 1)
 		love.graphics.draw(upgrade.sprite, x, y, 0, self.scale, self.scale)
 	end
 end
@@ -202,6 +235,7 @@ function BattleState:restartGame()
 	self.battleNum = 1
 	self.oponent = self.oponentPool[self.battleNum]
 	self:reset()
+	Player:reset()
 end
 
 function BattleState:reset()
@@ -236,8 +270,6 @@ function BattleState:simulateBattle()
 	local turnResult = simulateTurn(Player, self.oponent, self.hist)
 	self.hist:addSnapshot(Player)
 
-	print(resultadoTurno)
-
 	if turnResult == Combat.ONGOING then
 		return
 	end
@@ -254,7 +286,7 @@ end
 
 function BattleState:newCounterText(txt)
 	local width, height = love.graphics.getDimensions()
-	return Text.new(txt, 64, { 0.15, 0.10, 0.08, 1 }, { width / 2, height * 2/5 }, 0, 0, 1, function(text, dt)
+	return Text.new(txt, 64, { 0.15, 0.10, 0.08, 1 }, { width / 2, height * 2 / 5 }, 0, 0, 1, function(text, dt)
 		text.scale = text.scale and text.scale + 3 * dt or 1
 	end)
 end
@@ -277,7 +309,12 @@ function BattleState:load()
 	local xOffset = 50
 	local yOffset = 135
 	self.texts.playerName = Text.new(string.upper(Player.name), 32, { 0, 0, 0, 1 }, { xOffset, yOffset })
-	self.texts.oponentName = Text.new(string.upper(self.oponent.name), 32, { 0, 0, 0, 1 }, { love.graphics.getWidth() - xOffset, yOffset })
+	self.texts.oponentName = Text.new(
+		string.upper(self.oponent.name),
+		32,
+		{ 0, 0, 0, 1 },
+		{ love.graphics.getWidth() - xOffset, yOffset }
+	)
 
 	local textWidth = self.texts.oponentName:getDimensions()
 	self.texts.oponentName.pos[1] = self.texts.oponentName.pos[1] - textWidth
@@ -299,7 +336,11 @@ function BattleState:load()
 	-- upgrades owned
 	xOffset = 140
 	local playerUpgradesOwned = UpgradesOwned.new(Player.inventory.upgrades, { xOffset, yOffset }, 1)
-	local oponentUpgradesOwned = UpgradesOwned.new(self.oponent.inventory.upgrades, { love.graphics.getWidth() - xOffset - textWidth + 20, yOffset }, -1)
+	local oponentUpgradesOwned = UpgradesOwned.new(
+		self.oponent.inventory.upgrades,
+		{ love.graphics.getWidth() - xOffset - textWidth + 20, yOffset },
+		-1
+	)
 	self.upgradesOwned.player = playerUpgradesOwned
 	self.upgradesOwned.oponent = oponentUpgradesOwned
 
@@ -344,6 +385,7 @@ function BattleState:update(dt)
 	if self.timer <= 0 then
 		self.texts.counterShoot = self:newCounterText("SHOOT!")
 		self.sounds.counterShoot:play()
+		self.turn = self.turn + 1
 
 		self:simulateBattle()
 		self.timer = self.decisionTime + 2
@@ -388,7 +430,7 @@ function BattleState:draw()
 	local coisaX = screenW / 2 - (coisaW * coisaScale) / 2
 	local coisaY = 55
 	love.graphics.draw(coisa, coisaX, coisaY, 0, coisaScale, coisaScale)
-	
+
 	-- reset de cor
 	love.graphics.setColor(1, 1, 1, 1)
 
