@@ -8,7 +8,7 @@ require("modules.gamestate")
 require("modules.oponent")
 require("modules.finalscreen")
 
-local Player = require("modules.player")
+Player = require("modules.player")
 
 GameCtx = CTX.MENU
 
