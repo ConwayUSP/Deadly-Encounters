@@ -69,13 +69,12 @@ end
 
 function generateOponentPool()
 	local pool = {
-		initAberration(),
-		initArchibald(),
-		initDjabo(),
 		initJoshua(),
+		initDjabo(),
 		initOZard(),
 		initLarry(),
 		initSebastiao(),
+		initAberration(),
 	}
 
 	-- randomiza a ordem dos oponentes
