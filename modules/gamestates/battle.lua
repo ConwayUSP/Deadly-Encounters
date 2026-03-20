@@ -60,6 +60,8 @@ function BattleState:simulateBattle()
 	local resultadoTurno = simulateTurn(Player, self.oponent, self.hist)
 	self.hist:addSnapshot(Player)
 
+	print(resultadoTurno)
+
 	if turnResult == Combat.ONGOING then
 		return
 	end

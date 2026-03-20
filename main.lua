@@ -12,18 +12,11 @@ Player = require("modules.player")
 
 GameCtx = CTX.MENU
 
-GameState = {}
-GameState[CTX.MENU] = GAMESTATE[CTX.MENU]
-GameState[CTX.BATTLE] = GAMESTATE[CTX.BATTLE]
-GameState[CTX.SHOP] = GAMESTATE[CTX.SHOP]
-GameState[CTX.DEATH_SCREEN] = GAMESTATE[CTX.DEATH_SCREEN]
-GameState[CTX.VICTORY_SCREEN] = GAMESTATE[CTX.VICTORY_SCREEN]
-
 -- Função auxiliar para trocar de contexto e carregar o novo estado
 -- TODO: inserir transição
 function SetGameCtx(newCtx)
 	GameCtx = newCtx
-	GameState[GameCtx]:load()
+	GAMESTATE[GameCtx]:load()
 end
 
 function love.load()
@@ -34,11 +27,11 @@ function love.load()
 end
 
 function love.update(dt)
-	GameState[GameCtx]:update(dt)
+	GAMESTATE[GameCtx]:update(dt)
 end
 
 function love.draw()
-	GameState[GameCtx]:draw()
+	GAMESTATE[GameCtx]:draw()
 end
 
 function love.keypressed(key, scancode, isrepeat)
@@ -50,5 +43,5 @@ function love.keypressed(key, scancode, isrepeat)
 		SetGameCtx(CTX.SHOP)
 	end
 
-	GameState[GameCtx]:keypressed(key, scancode, isrepeat)
+	GAMESTATE[GameCtx]:keypressed(key, scancode, isrepeat)
 end
