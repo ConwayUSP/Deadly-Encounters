@@ -12,10 +12,10 @@ function Text.new(content, size, color, pos, rotation, centerOffset, lifetime, u
 	text.size = size
 	text.color = color
 	text.pos = pos
-	text.rotation = rotation
+	text.rotation = rotation or 0
 	text.centerOffset = centerOffset
-	text.timer = lifetime
-	text.customUpdate = updateFunc
+	text.timer = lifetime or math.huge
+	text.customUpdate = updateFunc or function() end
 	text.isOver = false
 	text.maxWidth = maxWidth
 	text.font = returnFont(size)

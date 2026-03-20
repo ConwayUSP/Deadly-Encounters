@@ -64,7 +64,8 @@ function Oponent:draw(pos)
 		x = animation.frameDim.width / 2,
 		y = animation.frameDim.height / 2,
 	}
-	love.graphics.draw(self.spriteSheets[self.action], quad, pos[1], pos[2], 0, 1, 1, offset.x, offset.y)
+	local scale = 0.75
+	love.graphics.draw(self.spriteSheets[self.action], quad, pos[1], pos[2], 0, scale, scale, offset.x, offset.y)
 end
 
 function generateOponentPool()
