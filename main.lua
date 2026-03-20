@@ -25,29 +25,40 @@ MainTransition = Transition.new(0.5, Transition.FADEINOUT)
 
 -- Função auxiliar para trocar de contexto e carregar o novo estado
 function SetGameCtx(newCtx)
-    MainTransition:start(function()
-        GameCtx = newCtx
-        GameState[GameCtx]:load()
-    end)
+	local sounds = GameState[GameCtx].sounds
+	if sounds then
+		for _, sound in pairs(sounds) do
+			sound:stop()
+		end
+	end
+
+	MainTransition:start(function()
+		GameCtx = newCtx
+		GameState[GameCtx]:load()
+	end)
 end
 
 function love.load()
 	love.window.setFullscreen(true)
 
-    -- carrega o estado inicial manualmente para usar uma transição
+	-- carrega o estado inicial manualmente para usar uma transição
 	GameState[GameCtx]:load()
 end
 
 function love.update(dt)
-    MainTransition:update(dt)
-    -- do not update the scene while transition is running
-    if MainTransition.isActive then return end
+	MainTransition:update(dt)
+
+	-- do not update the scene while transition is running
+	if MainTransition.isActive then
+		return
+	end
+	
 	GameState[GameCtx]:update(dt)
 end
 
 function love.draw()
 	GameState[GameCtx]:draw()
-    MainTransition:draw()
+	MainTransition:draw()
 end
 
 function love.keypressed(key, scancode, isrepeat)

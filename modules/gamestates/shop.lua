@@ -229,6 +229,7 @@ ShopState.allItems = {
 }
 ShopState.sprites = {}
 ShopState.texts = {}
+ShopState.sounds = {}
 ShopState.itemsForSale = {}
 ShopState.selectedItemIndex = 1
 ShopState.buyed = false
@@ -265,6 +266,21 @@ function ShopState:load()
 	self.sprites.bg = love.graphics.newImage("assets/UI/shop/market_bg.jpg")
 	self.sprites.sign = love.graphics.newImage("assets/UI/shop/plate.png")
 	self.sprites.bag = love.graphics.newImage("assets/UI/shop/bag.png")
+
+	-- sounds
+	self.sounds.buy = love.audio.newSource("sounds/buy_00.wav", "static")
+	self.sounds.select = love.audio.newSource("sounds/select.wav", "static")
+	self.sounds.bell = love.audio.newSource("sounds/shop_bell.wav", "static")
+	self.sounds.bg = love.audio.newSource("sounds/shop_bg.mp3", "stream")
+
+	self.sounds.buy:setVolume(0.35)
+	self.sounds.bell:setVolume(0.8)
+
+	self.sounds.bg:play()
+	self.sounds.bg:setLooping(true)
+	self.sounds.bg:setVolume(0.3)
+
+	self.sounds.bell:play()
 
 	local function blinkUpdate(text, dt)
 		local alpha = text.color[4] or 1
@@ -402,6 +418,7 @@ function ShopState:keypressed(key, scancode, isrepeat)
 		local selectedItem = self.itemsForSale[self.selectedItemIndex]
 		if selectedItem then
 			self:buyItem(selectedItem)
+			self.sounds.buy:play()
 		end
 
 		self:setPurchasedSlots(Player.inventory.items)
@@ -418,6 +435,8 @@ function ShopState:selectItem(index)
 	if self.buyed then
 		return
 	end
+
+	self.sounds.select:play()
 	
 	if index == self.selectedItemIndex then
 		self.selectedItemIndex = -1

@@ -17,6 +17,8 @@ MenuState.texts = {}
 
 MenuState.titleFont = nil
 MenuState.promptFont = nil
+MenuState.sounds = {}
+MenuState.timer = 0
 
 function MenuState:load()
 	local width, height = love.graphics.getDimensions()
@@ -53,14 +55,24 @@ function MenuState:load()
 			text.color[4] = alpha
 		end
 	)
+
+	-- sounds
+	self.sounds.start = love.audio.newSource("sounds/start.mp3", "static")
+	self.sounds.start:setVolume(0.5)
 end
 
 function MenuState:update(dt)
-	for _, text in pairs(self.texts) do
-		if text.update then
-			text:update(dt)
+
+	if self.timer > 0 then
+		self.timer = self.timer - dt
+		if self.timer <= 0 then
+			SetGameCtx(CTX.BATTLE)
 		end
 	end
+	
+	self.texts.title:update(dt)
+	self.texts.prompt:update(self.timer > 0 and 6*dt or dt)
+	
 	cleanUpTexts(self.texts)
 end
 
@@ -78,7 +90,10 @@ end
 
 function MenuState:keypressed(key, scancode, isrepeat)
 	if key == "return" or key == "space" then
-		SetGameCtx(CTX.BATTLE)
+		if self.timer <= 0 then
+			self.timer = 2.5
+			self.sounds.start:play()
+		end
 	end
 end
 
