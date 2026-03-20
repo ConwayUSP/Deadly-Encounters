@@ -22,6 +22,14 @@ GameState[CTX.VICTORY_SCREEN] = GAMESTATE[CTX.VICTORY_SCREEN]
 -- Função auxiliar para trocar de contexto e carregar o novo estado
 -- TODO: inserir transição
 function SetGameCtx(newCtx)
+
+	local sounds = GameState[GameCtx].sounds
+	if sounds then
+		for _, sound in pairs(sounds) do
+			sound:stop()
+		end
+	end
+
 	GameCtx = newCtx
 	GameState[GameCtx]:load()
 end
