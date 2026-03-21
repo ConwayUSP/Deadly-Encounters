@@ -34,8 +34,8 @@ function ItemSlot:draw()
 	love.graphics.draw(self.socket, self.pos[1] - socketW / 2, self.pos[2] - socketH / 2, 0, self.scale, self.scale)
 
 	local itemScale = 0.25
-	if self.items[1] then
-		local item = self.items[1]
+	if self.items[3] then
+		local item = self.items[3]
 		local itemSprite = item.sprite
 		local itemW = itemSprite:getWidth() * itemScale
 		local itemH = itemSprite:getHeight() * itemScale
@@ -49,8 +49,8 @@ function ItemSlot:draw()
 		)
 	end
 
-	if self.items[2] then
-		local item = self.items[2]
+	if self.items[1] then
+		local item = self.items[1]
 		local itemSprite = item.sprite
 		local itemW = itemSprite:getWidth() * itemScale
 		local itemH = itemSprite:getHeight() * itemScale
@@ -64,8 +64,8 @@ function ItemSlot:draw()
 		)
 	end
 
-	if self.items[3] then
-		local item = self.items[3]
+	if self.items[2] then
+		local item = self.items[2]
 		local itemSprite = item.sprite
 		local itemW = itemSprite:getWidth() * itemScale
 		local itemH = itemSprite:getHeight() * itemScale
@@ -261,19 +261,68 @@ function UpgradesOwned:draw()
 end
 
 ----------------------------------------
+-- Entidade CounterText
+----------------------------------------
+
+CounterText = {}
+CounterText.__index = CounterText
+
+function CounterText.new(pos)
+	local counterText = setmetatable({}, CounterText)
+	counterText.pos = pos
+	
+	counterText.counter = nil
+	counterText.scale = 1
+	counterText.isActive = false
+
+	return counterText
+end
+
+function CounterText:setCounter(counter)
+	self.counter = counter
+	self.scale = 1
+	self.isActive = true
+end
+
+function CounterText:update(dt)
+	if not self.isActive then
+		return
+	end
+
+	self.scale = self.scale + 2 * dt
+
+	if self.scale > 2 then
+		self.isActive = false
+	end	
+end
+
+function CounterText:draw()
+	if not self.isActive then
+		return
+	end
+
+	local width = self.counter:getWidth()
+	local height = self.counter:getHeight()
+
+	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.draw(self.counter, self.pos.x - (width * self.scale) / 2, self.pos.y - (height * self.scale) / 2, 0, self.scale, self.scale)
+	love.graphics.setColor(1, 1, 1, 1)
+end
+
+----------------------------------------
 -- Estado do jogo no contexto de batalha
 ----------------------------------------
 
 local BattleState = {}
 BattleState.__index = BattleState
 
--- TODO: preencher o estado
 BattleState.sprites = {}
 BattleState.texts = {}
 BattleState.sounds = {}
 BattleState.upgradesOwned = {}
 BattleState.healthBar = {}
 BattleState.actionSlots = {}
+BattleState.counter = nil
 BattleState.itemSlots = nil
 BattleState.oponentPool = generateOponentPool()
 BattleState.battleNum = 1
@@ -306,6 +355,7 @@ function BattleState:resetUI()
 	self.healthBar = {}
 	self.actionSlots = {}
 	self.itemSlots = nil
+	self.counter = CounterText.new({ x = love.graphics.getWidth() / 2, y = love.graphics.getHeight() * 2 / 5 })
 
 	local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
 
@@ -408,6 +458,10 @@ function BattleState:load()
 	-- sprites	
 	local background = love.graphics.newImage("assets/UI/combat/combat_bg.png")
 	self.sprites.bg = background
+	self.sprites.one = love.graphics.newImage("assets/UI/combat/1.png")
+	self.sprites.two = love.graphics.newImage("assets/UI/combat/2.png")
+	self.sprites.three = love.graphics.newImage("assets/UI/combat/3.png")
+	self.sprites.shoot = love.graphics.newImage("assets/UI/combat/shoot.png")
 
 	-- sounds
 	self.sounds.select = love.audio.newSource("sounds/select.wav", "static")
@@ -415,45 +469,41 @@ function BattleState:load()
 	self.sounds.counter2 = love.audio.newSource("sounds/counter_2.mp3", "static")
 	self.sounds.counter1 = love.audio.newSource("sounds/counter_1.mp3", "static")
 	self.sounds.counterShoot = love.audio.newSource("sounds/counter_shoot.mp3", "static")
-
-	-- debug buffs
-	-- Player:getBuff(initShield())
-	-- Player:getBuff(initStopWatch())
-	-- Player:getBuff(initEnergyDrink())
-	-- Player:getBuff(initPotion())
-	-- Player:getBuff(initFlashbang())
-	-- self.oponent.inventory.upgrades = { initShield(), initTotem() }
 end
 
 function BattleState:update(dt)
 	local pt = self.timer
 	self.timer = pt - 2 * dt
 	if self.timer <= 0 then
-		self.texts.counterShoot = self:newCounterText("SHOOT!")
+		self.counter:setCounter(self.sprites.shoot)
 		self.sounds.counterShoot:play()
 		self.turn = self.turn + 1
 
 		self:simulateBattle()
 		self.timer = self.decisionTime + 2
-		-- self.texts = {}
 	end
 	if pt > 3 and self.timer < 3 then
-		self.texts.counter3 = self:newCounterText("3")
+		self.counter:setCounter(self.sprites.three)
 		self.sounds.counter3:play()
 	end
 	if pt > 2 and self.timer < 2 then
-		self.texts.counter2 = self:newCounterText("2")
+		self.counter:setCounter(self.sprites.two)
 		self.sounds.counter2:play()
 	end
 	if pt > 1 and self.timer < 1 then
-		self.texts.counter1 = self:newCounterText("1")
+		self.counter:setCounter(self.sprites.one)
 		self.sounds.counter1:play()
 	end
 
+	-- counter
+	self.counter:update(dt)
+
+	-- action slots
 	for _, slot in pairs(self.actionSlots) do
 		slot:update(dt)
 	end
 
+	-- texts
 	for _, text in pairs(self.texts) do
 		if text.update then
 			text:update(dt)
@@ -509,9 +559,13 @@ function BattleState:draw()
 	-- item slots
 	self.itemSlots:draw()
 
+	-- texts
 	for _, text in pairs(self.texts) do
 		text:draw()
 	end
+
+	-- counter
+	self.counter:draw()
 
 	love.graphics.setColor(1, 1, 1, 1)
 end
