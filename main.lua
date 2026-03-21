@@ -34,9 +34,8 @@ function love.load()
 	love.window.setFullscreen(true)
 
 	-- carrega o estado inicial manualmente para usar uma transição
-	for _, state in pairs(GAMESTATE) do
-		state:load()
-	end
+	GAMESTATE[GameCtx]:load()
+	GAMESTATE[CTX.BATTLE]:restartGame()
 end
 
 function love.update(dt)

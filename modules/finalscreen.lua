@@ -12,77 +12,43 @@ require("modules.fs")
 FinalScreen = {}
 FinalScreen.__index = FinalScreen
 
--- fontes usadas no menu
-FinalScreen.titleFont = nil
-FinalScreen.promptFont = nil
-
-function FinalScreen:new(title, prompt)
+function FinalScreen:new(title, prompt, timer)
 	local screen = setmetatable({}, FinalScreen)
-	-- fontes e textos a serem exibidos
-	screen:loadFonts()
-
 	local width, height = love.graphics.getDimensions()
 
+	screen.timer = timer or 2.5
 	screen.texts = {}
-
-	-- texto do título (gira levemente e pulsa no tamanho)
-	screen.texts.title = Text.new(
-		title,
-		64,
-		{ 0.15, 0.10, 0.08, 1 },
-		{ width / 2, height / 3 },
-		0,
-		true,
-		math.huge,
-		function(text, dt)
-			text.time = (text.time or 0) + dt
-			local rotateDeg = math.sin(text.time * 2) * 2
-			text.rotation = math.rad(rotateDeg)
-			text.scale = 1 + 0.05 * math.sin(text.time * 0.5)
-		end
-	)
-	screen.texts.title.font = screen.titleFont
 
 	-- texto do prompt (pisca na transparência)
 	screen.texts.prompt = Text.new(
 		prompt,
 		32,
-		{ 0.15, 0.10, 0.08, 1 },
-		{ width / 2, height * 0.6 },
+		{ 1, 1, 1, 0 },
+		{ width / 2, height * 0.75 },
 		0,
 		true,
 		math.huge,
 		function(text, dt)
 			text.time = (text.time or 0) + dt
-			local alpha = 0.5 + 0.5 * math.sin(text.time * 4)
+			local alpha = 0.5 * math.sin(text.time * 4)
 			text.color[4] = alpha
 		end
 	)
-	screen.texts.prompt.font = screen.promptFont
 
 	return screen
 end
 
-function FinalScreen:loadFonts()
-	self.titleFont = love.graphics.newFont(64)
-	self.promptFont = love.graphics.newFont(32)
-end
-
 function FinalScreen:update(dt)
-	for _, text in pairs(self.texts or {}) do
-		if text.update then
-			text:update(dt)
-		end
+	if self.timer > 0 then
+		self.timer = self.timer - dt
+		return
 	end
+
+	self.texts.prompt:update(dt)
 end
 
 function FinalScreen:draw()
-	-- fundo em tom bege suave
-	love.graphics.clear(0.95, 0.90, 0.80)
-
-	for _, text in pairs(self.texts or {}) do
-		text:draw()
-	end
+	self.texts.prompt:draw()
 
 	-- reset de cor
 	love.graphics.setColor(1, 1, 1, 1)
@@ -90,7 +56,6 @@ end
 
 function FinalScreen:keypressed(key, scancode, isrepeat)
 	if key == "return" or key == "space" then
-		GAMESTATE[CTX.BATTLE]:restartGame()
 		SetGameCtx(CTX.MENU)
 	end
 end
