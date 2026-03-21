@@ -209,12 +209,22 @@ function HealthBar.new(creature, pos, who)
 	healthBar.creature = creature
 	healthBar.pos = pos
 	healthBar.scale = 0.72
+	healthBar.targetRatio = 1
+	healthBar.currentRatio = 1
 
 	healthBar.empty = love.graphics.newImage("assets/UI/combat/empty_healthbar.png")
 	healthBar.full = love.graphics.newImage("assets/UI/combat/" .. who .. "_healthbar.png")
 	healthBar.shielded = love.graphics.newImage("assets/UI/combat/shielded_healthbar.png")
 
 	return healthBar
+end
+
+function HealthBar:update(dt)
+	local hpRatio = self.creature.hp / self.creature.maxHp
+	self.targetRatio = hpRatio
+
+	local speed = 6
+	self.currentRatio = self.currentRatio + (self.targetRatio - self.currentRatio) * (1 - math.exp(-speed * dt))
 end
 
 function HealthBar:draw()
@@ -526,10 +536,10 @@ function BattleState:update(dt)
 		self.sounds.counter1:play()
 	end
 
-	-- counter
-	self.counter:update(dt)
+	for _, healthBar in pairs(self.healthBar) do
+		healthBar:update(dt)
+	end
 
-	-- action slots
 	for _, slot in pairs(self.actionSlots) do
 		slot:update(dt)
 	end
