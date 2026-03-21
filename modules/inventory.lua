@@ -31,7 +31,6 @@ function Inventory:insert(buff)
 		for k, v in pairs(self.items) do
 			if v.id == buff.id then
 				repeated = true
-				v.quantity = v.quantity + 1
 			end
 		end
 		if not repeated then
@@ -42,7 +41,6 @@ function Inventory:insert(buff)
 		for k, v in pairs(self.upgrades) do
 			if v.id == buff.id and v.id == UPGRADE.DEFIBRILLATOR then
 				repeated = true
-				v.quantity = v.quantity + 1
 			end
 		end
 		if not repeated then

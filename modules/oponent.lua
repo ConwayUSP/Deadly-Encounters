@@ -39,6 +39,16 @@ function Oponent.new(name, maxHP, maxCounters, items, upgrades, strategyFunc)
 	return oponent
 end
 
+function Oponent:hasUpgrade(upgradeId)
+	for _, upgrade in pairs(self.inventory.upgrades) do
+		if upgrade.id == upgradeId then
+			return upgrade
+		end
+	end
+
+	return nil
+end
+
 function Oponent:hasItem(itemId)
 	for _, item in pairs(self.inventory.items) do
 		if item.id == itemId and item.quantity > 0 then

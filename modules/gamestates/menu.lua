@@ -92,7 +92,7 @@ end
 function MenuState:keypressed(key, scancode, isrepeat)
 	if key == "return" or key == "space" then
 		if self.timer <= 0 then
-			self.timer = 2.5
+			self.timer = 1.0
 			self.sounds.start:play()
 		end
 	end

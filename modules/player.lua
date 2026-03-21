@@ -36,6 +36,7 @@ function Player:reset()
 end
 
 function Player:resetForBattle()
+	self:reset()
 	self.hp = self.maxHp
 	self.counters = self.maxCounters
 	self.ammo = 0
@@ -52,6 +53,16 @@ function Player:resetForBattle()
 	for _, item in pairs(self.inventory.items) do
 		item.quantity = item.initialQuantity
 	end
+end
+
+function Player:hasUpgrade(upgradeId)
+	for _, upgrade in pairs(self.inventory.upgrades) do
+		if upgrade.id == upgradeId then
+			return upgrade
+		end
+	end
+
+	return nil
 end
 
 function Player:getBuff(buff)

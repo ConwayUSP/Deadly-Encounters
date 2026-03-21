@@ -16,7 +16,7 @@ UPGRADE.PARRY = "parry"
 UPGRADE.SHIELD = "shield"
 UPGRADE.DEFIBRILLATOR = "defibrillator"
 UPGRADE.REVERSE_CARD = "reverse card"
-UPGRADE.LUCK_TOTEM = "luck totem"
+UPGRADE.LUCKY_TOTEM = "lucky totem"
 UPGRADE.STOPWATCH = "stopwatch"
 
 ITEM = {}
@@ -52,4 +52,12 @@ end
 function ItemUpgrade:activate(creature, ...)
 	self.applyEffect(creature, ...)
 	creature.inventory:discardBuff(self)
+end
+
+function ItemUpgrade:draw(pos, scale, withQuantity)
+	love.graphics.draw(self.sprite, pos[1], pos[2], 0, scale, scale)
+	if withQuantity then
+		local qtyText = tostring(self.quantity) .. "x"
+		love.graphics.print(qtyText, pos[1] + 20, pos[2] + 20)
+	end
 end
