@@ -202,6 +202,7 @@ function HealthBar.new(creature, pos, who)
 
 	healthBar.empty = love.graphics.newImage("assets/UI/combat/empty_healthbar.png")
 	healthBar.full = love.graphics.newImage("assets/UI/combat/" .. who .. "_healthbar.png")
+	healthBar.shielded = love.graphics.newImage("assets/UI/combat/shielded_healthbar.png")
 
 	return healthBar
 end
@@ -214,19 +215,24 @@ function HealthBar:draw()
 	-- background
 	love.graphics.draw(self.empty, self.pos[1] - emptyW / 2, self.pos[2], 0, self.scale, self.scale)
 
-	-- foreground (vida)
-	local hpRatio = self.creature.hp / self.creature.maxHp
-	local barWidth = emptyW * hpRatio
-	local offset = 0
-
-	love.graphics.setScissor(
-		self.pos[1] - emptyW / 2 + offset,
-		self.pos[2],
-		barWidth,
-		self.full:getHeight() * self.scale
-	)
-	love.graphics.draw(self.full, self.pos[1] - emptyW / 2, self.pos[2], 0, self.scale, self.scale)
-	love.graphics.setScissor()
+	if self.creature.shielded then
+		-- shield
+		love.graphics.draw(self.shielded, self.pos[1] - emptyW / 2, self.pos[2], 0, self.scale, self.scale)
+	else 
+		-- foreground (vida)
+		local hpRatio = self.creature.hp / self.creature.maxHp
+		local barWidth = emptyW * hpRatio
+		local offset = 0
+	
+		love.graphics.setScissor(
+			self.pos[1] - emptyW / 2 + offset,
+			self.pos[2],
+			barWidth,
+			self.full:getHeight() * self.scale
+		)
+		love.graphics.draw(self.full, self.pos[1] - emptyW / 2, self.pos[2], 0, self.scale, self.scale)
+		love.graphics.setScissor()
+	end
 
 	-- reset de cor
 	love.graphics.setColor(1, 1, 1, 1)
