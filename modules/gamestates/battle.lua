@@ -90,19 +90,69 @@ end
 ActionSlot = {}
 ActionSlot.__index = ActionSlot
 
-function ActionSlot.new(action, pos, scale)
+function ActionSlot.new(action, index, scale, screenW)
 	local slot = setmetatable({}, ActionSlot)
 	slot.action = action
-	slot.originalPos = pos
-	slot.pos = { pos[1], pos[2] }
-	slot.moving = false
-	slot.active = false
+	slot.originalIndex = index
+	slot.index = index
 	slot.scale = scale
+	slot.screen = screenW
 
+	slot.active = false
+	slot.isMoving = false
+	slot.gap = 15
+
+	-- sprites
 	slot.socket = love.graphics.newImage("assets/UI/combat/action_socket.png")
 	slot.actionSprite = love.graphics.newImage("assets/UI/combat/" .. action .. ".png")
 
+	-- position
+	local y = love.graphics.getHeight() - 100
+	local slotWidth = slot.socket:getWidth() * scale
+	local totalWidth = 5 * slotWidth + 4 * slot.gap
+	local startX = (screenW - totalWidth) / 2
+	local x = startX + (index - 1) * (slotWidth + slot.gap) + slotWidth / 2
+	
+	slot.startX = startX
+	slot.originalPos = { x, y }
+	slot.pos = { x, y }
+	slot.targetPos = {}
+
 	return slot
+end
+
+function ActionSlot:moveTo(newIndex)
+	if newIndex < 1 or newIndex > 5 or newIndex == self.index then
+		return
+	end
+
+	local slotWidth = self.socket:getWidth() * self.scale
+	local newX = self.startX + (newIndex - 1) * (slotWidth + self.gap) + slotWidth / 2
+	self.targetPos = { newX, self.pos[2] }
+	self.isMoving = true
+	self.index = newIndex
+end
+
+function ActionSlot:resetPosition()
+	self.targetPos = { self.originalPos[1], self.originalPos[2] }
+	self.isMoving = true
+	self.index = self.originalIndex
+end
+
+function ActionSlot:update(dt)
+	if self.isMoving then
+		local dx = self.targetPos[1] - self.pos[1]
+		local dy = self.targetPos[2] - self.pos[2]
+		if math.abs(dx) < 1 and math.abs(dy) < 1 then
+			self.pos[1] = self.targetPos[1]
+			self.pos[2] = self.targetPos[2]
+			self.targetPos = {}
+			self.isMoving = false
+		else
+			self.pos[1] = self.pos[1] + dx * dt * 10
+			self.pos[2] = self.pos[2] + dy * dt * 10
+		end
+	end
 end
 
 function ActionSlot:draw()
@@ -355,27 +405,14 @@ function BattleState:load()
 	self.healthBar.oponent = healthBarOponent
 
 	-- items slots
-	local itemSlot = love.graphics.newImage("assets/UI/combat/consumables_socket.png")
 	local itemScale = 0.7
-	local itemSlotW = itemSlot:getWidth() * itemScale
-	self.itemSlots = ItemSlot.new(Player.inventory.items, itemScale, { 0, screenH - 100 })
+	self.itemSlots = ItemSlot.new(Player.inventory.items, itemScale, { screenW - 340, screenH - 100 })
+	local itemSlotW = self.itemSlots.socket:getWidth() * itemScale
 
 	-- action slots
-	local actionSlotYOffset = 100
-	local actionSlotSpacing = 15
-	local socketImg = love.graphics.newImage("assets/UI/combat/action_socket.png")
 	local slotScale = 0.7
-	local slotWidth = socketImg:getWidth() * slotScale
-	local gap = actionSlotSpacing
-	local totalWidth = 5 * slotWidth + 4 * gap
-	local regionWidth = screenW / 2
-	local rowLeft = screenW / 4 + (regionWidth - totalWidth) / 2 - itemSlotW
-	self.itemSlots.pos[1] = rowLeft + totalWidth + slotWidth + gap + 20
-
 	for i = 1, 5 do
-		local idx = i - 1
-		local rightEdgeX = rowLeft + slotWidth + idx * (slotWidth + gap)
-		self.actionSlots[i] = ActionSlot.new(ACTION_IDX[i], { rightEdgeX, screenH - actionSlotYOffset }, slotScale)
+		self.actionSlots[i] = ActionSlot.new(ACTION_IDX[i], i, slotScale, screenW - itemSlotW)
 	end
 end
 
@@ -402,6 +439,10 @@ function BattleState:update(dt)
 	if pt > 1 and self.timer < 1 then
 		self.texts.counter1 = self:newCounterText("1")
 		self.sounds.counter1:play()
+	end
+
+	for _, slot in pairs(self.actionSlots) do
+		slot:update(dt)
 	end
 
 	for _, text in pairs(self.texts) do
@@ -473,6 +514,8 @@ function BattleState:keypressed(key, scancode, isrepeat)
 		SetGameCtx(CTX.VICTORY_SCREEN)
 	elseif key == "s" then
 		SetGameCtx(CTX.SHOP)
+	elseif key == "l" then
+		self:shuffleActionSlots()
 	end
 
 	local num = tonumber(key)
@@ -494,6 +537,19 @@ function BattleState:setAction(num)
 		else
 			slot.active = false
 		end
+	end
+end
+
+function BattleState:shuffleActionSlots()
+	local usedIndexes = {}
+	for _, slot in pairs(self.actionSlots) do
+		local newIndex = math.random(1, 5)
+		while usedIndexes[newIndex] do
+			newIndex = math.random(1, 5)
+		end
+
+		usedIndexes[newIndex] = true
+		slot:moveTo(newIndex)
 	end
 end
 

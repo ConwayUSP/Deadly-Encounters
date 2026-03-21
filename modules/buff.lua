@@ -49,7 +49,7 @@ function ItemUpgrade.new(id, desc, effectFunc, type, quantity, onStart)
 end
 
 -- na hora do combate, ativa o efeito do item/upgrade e o discarta
-function ItemUpgrade:activate(creature, oponent)
-	self.applyEffect(creature, oponent)
+function ItemUpgrade:activate(creature, ...)
+	self.applyEffect(creature, ...)
 	creature.inventory:discardBuff(self)
 end
