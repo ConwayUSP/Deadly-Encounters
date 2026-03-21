@@ -139,6 +139,10 @@ function ActionSlot:resetPosition()
 	self.index = self.originalIndex
 end
 
+function ActionSlot:getPosEnd()
+	return self.pos[1] + (self.socket:getWidth() * self.scale) / 2 + self.gap
+end
+
 function ActionSlot:update(dt)
 	if self.isMoving then
 		local dx = self.targetPos[1] - self.pos[1]
@@ -344,30 +348,19 @@ end
 function BattleState:load()
 	self:reset()
 
+	-- sounds
+	self.sounds.select = love.audio.newSource("sounds/select.wav", "static")
+
+	-- sprites
 	local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
 
 	local background = love.graphics.newImage("assets/UI/combat/combat_bg.png")
-	-- local background = love.graphics.newImage("assets/UI/combat/reference.jpg")
 	self.sprites.bg = background
 
 	-- coisa
 	self.sprites.coisa = love.graphics.newImage("assets/UI/combat/coisa.png")
 	local coisaW = self.sprites.coisa:getWidth()
 	local coisaScale = 0.65
-
-	-- textos
-	local xOffset = 50
-	local yOffset = 135
-	self.texts.playerName = Text.new(string.upper(Player.name), 32, { 0, 0, 0, 1 }, { xOffset, yOffset })
-	self.texts.oponentName = Text.new(
-		string.upper(self.oponent.name),
-		32,
-		{ 0, 0, 0, 1 },
-		{ love.graphics.getWidth() - xOffset, yOffset }
-	)
-
-	local textWidth = self.texts.oponentName:getDimensions()
-	self.texts.oponentName.pos[1] = self.texts.oponentName.pos[1] - textWidth
 
 	-- sounds
 	self.sounds.counter3 = love.audio.newSource("sounds/counter_3.mp3", "static")
@@ -383,17 +376,6 @@ function BattleState:load()
 	-- Player:getBuff(initFlashbang())
 	-- self.oponent.inventory.upgrades = { initShield(), initTotem() }
 
-	-- upgrades owned
-	xOffset = 140
-	local playerUpgradesOwned = UpgradesOwned.new(Player.inventory.upgrades, { xOffset, yOffset }, 1)
-	local oponentUpgradesOwned = UpgradesOwned.new(
-		self.oponent.inventory.upgrades,
-		{ love.graphics.getWidth() - xOffset - textWidth + 20, yOffset },
-		-1
-	)
-	self.upgradesOwned.player = playerUpgradesOwned
-	self.upgradesOwned.oponent = oponentUpgradesOwned
-
 	-- health bars
 	xOffset = 40
 	local centerFirstPart = (screenW - coisaW * coisaScale * 0.5) / 4
@@ -404,16 +386,37 @@ function BattleState:load()
 	self.healthBar.player = healthBarPlayer
 	self.healthBar.oponent = healthBarOponent
 
+	-- textos
+	local xOffset = centerFirstPart - self.healthBar.player.empty:getWidth() * self.healthBar.player.scale / 2
+	local yOffset = 135
+	self.texts.playerName = Text.new(string.upper(Player.name), 32, { 0, 0, 0, 1 }, { xOffset, yOffset })
+
+	local textPlayerWidth = self.texts.playerName:getDimensions()
+	local playerUpgradesOwned = UpgradesOwned.new(Player.inventory.upgrades, { xOffset + textPlayerWidth + 20, yOffset }, 1)
+
+	xOffset = centerSecondPart + self.healthBar.oponent.empty:getWidth() * self.healthBar.oponent.scale / 2
+	self.texts.oponentName = Text.new(string.upper(self.oponent.name), 32, { 0, 0, 0, 1 }, { xOffset, yOffset })
+	
+	local textOponentWidth = self.texts.oponentName:getDimensions()
+	local oponentUpgradesOwned = UpgradesOwned.new(self.oponent.inventory.upgrades, { xOffset - textOponentWidth - 20, yOffset }, -1)
+	self.texts.oponentName.pos[1] = self.texts.oponentName.pos[1] - textOponentWidth
+
+	-- upgrades owned
+	self.upgradesOwned.player = playerUpgradesOwned
+	self.upgradesOwned.oponent = oponentUpgradesOwned
+
 	-- items slots
 	local itemScale = 0.7
-	self.itemSlots = ItemSlot.new(Player.inventory.items, itemScale, { screenW - 340, screenH - 100 })
+	self.itemSlots = ItemSlot.new(Player.inventory.items, itemScale, { 0, screenH - 100 })
+	
 	local itemSlotW = self.itemSlots.socket:getWidth() * itemScale
-
 	-- action slots
 	local slotScale = 0.7
 	for i = 1, 5 do
 		self.actionSlots[i] = ActionSlot.new(ACTION_IDX[i], i, slotScale, screenW - itemSlotW)
 	end
+
+	self.itemSlots.pos[1] = self.actionSlots[5]:getPosEnd() + self.itemSlots.socket:getWidth() * itemScale / 2
 end
 
 function BattleState:update(dt)
@@ -530,6 +533,8 @@ function BattleState:setAction(num)
 	else
 		Player.action = ACTION.NONE
 	end
+
+	self.sounds.select:play()
 
 	for i, slot in pairs(self.actionSlots) do
 		if i == num then
