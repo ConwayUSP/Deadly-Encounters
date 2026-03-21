@@ -533,7 +533,7 @@ function BattleState:update(dt)
 	end
 	if pt > 2.25 and self.timer < 2.25 then
 		if self.turn ~= 1 then
-			Player.action = ACTION.MISS
+			self:setAction(0)
 			self.oponent.action = ACTION.MISS
 		end
 		self.counter:setCounter(self.sprites.three)
@@ -640,10 +640,20 @@ function BattleState:keypressed(key, scancode, isrepeat)
 end
 
 function BattleState:setAction(num)
-	if Player.action ~= ACTION_IDX[num] then
-		Player.action = ACTION_IDX[num]
-	else
+	-- deselecionando o slot
+	for i, slot in pairs(self.actionSlots) do
+		if i == num then
+			slot.active = not slot.active
+		else
+			slot.active = false
+		end
+	end
+
+	-- alterando a acao do jogador
+	if Player.action == ACTION_IDX[num] or num == 0 then
 		Player.action = ACTION.NONE
+	else
+		Player.action = ACTION_IDX[num]
 	end
 
 	if Player.action == ACTION.ATK or Player.action == ACTION.HEAVY_ATK then
@@ -654,14 +664,6 @@ function BattleState:setAction(num)
 	end
 
 	self.sounds.select:play()
-
-	for i, slot in pairs(self.actionSlots) do
-		if i == num then
-			slot.active = not slot.active
-		else
-			slot.active = false
-		end
-	end
 end
 
 function BattleState:shuffleActionSlots()
