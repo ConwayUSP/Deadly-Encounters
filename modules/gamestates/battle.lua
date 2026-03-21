@@ -36,47 +36,57 @@ function ItemSlot:draw()
 	local itemScale = 0.25
 	if self.items[3] then
 		local item = self.items[3]
-		local itemSprite = item.sprite
-		local itemW = itemSprite:getWidth() * itemScale
-		local itemH = itemSprite:getHeight() * itemScale
-		love.graphics.draw(
-			itemSprite,
-			self.pos[1] + socketW / 4 - itemW / 2 - 8,
-			self.pos[2] - itemH / 2,
-			0,
-			itemScale,
-			itemScale
-		)
+
+		if item.quantity > 0 then
+			local itemSprite = item.sprite
+			local itemW = itemSprite:getWidth() * itemScale
+			local itemH = itemSprite:getHeight() * itemScale
+			love.graphics.draw(
+				itemSprite,
+				self.pos[1] + socketW / 4 - itemW / 2 - 8,
+				self.pos[2] - itemH / 2,
+				0,
+				itemScale,
+				itemScale
+			)
+		end
 	end
 
 	if self.items[1] then
 		local item = self.items[1]
-		local itemSprite = item.sprite
-		local itemW = itemSprite:getWidth() * itemScale
-		local itemH = itemSprite:getHeight() * itemScale
-		love.graphics.draw(
-			itemSprite,
-			self.pos[1] - socketW / 4 - itemW / 2 + 4,
-			self.pos[2] - itemH / 2 - socketH / 4 + 8,
-			0,
-			itemScale,
-			itemScale
-		)
+
+		if item.quantity > 0 then
+			local itemSprite = item.sprite
+			local itemW = itemSprite:getWidth() * itemScale
+			local itemH = itemSprite:getHeight() * itemScale
+			love.graphics.draw(
+				itemSprite,
+				self.pos[1] - socketW / 4 - itemW / 2 + 4,
+				self.pos[2] - itemH / 2 - socketH / 4 + 8,
+				0,
+				itemScale,
+				itemScale
+			)
+		end
+
 	end
 
 	if self.items[2] then
 		local item = self.items[2]
-		local itemSprite = item.sprite
-		local itemW = itemSprite:getWidth() * itemScale
-		local itemH = itemSprite:getHeight() * itemScale
-		love.graphics.draw(
-			itemSprite,
-			self.pos[1] - socketW / 4 - itemW / 2 + 4,
-			self.pos[2] - itemH / 2 + socketH / 4,
-			0,
-			itemScale,
-			itemScale
-		)
+
+		if item.quantity > 0 then
+			local itemSprite = item.sprite
+			local itemW = itemSprite:getWidth() * itemScale
+			local itemH = itemSprite:getHeight() * itemScale
+			love.graphics.draw(
+				itemSprite,
+				self.pos[1] - socketW / 4 - itemW / 2 + 4,
+				self.pos[2] - itemH / 2 + socketH / 4,
+				0,
+				itemScale,
+				itemScale
+			)
+		end
 	end
 
 	-- reset de cor
@@ -477,16 +487,31 @@ function BattleState:load()
 	self.sounds.counterShoot = love.audio.newSource("sounds/counter_shoot.mp3", "static")
 end
 
+function BattleState:resetTurn()
+	-- TODO: melhorar isso aqui que horror
+	Player.dmgMult = 1
+	self.oponent.dmgMult = 1
+
+	Player.defibrilated = false
+	self.oponent.defibrilated = false
+
+	Player.timedRight = false
+	self.oponent.timedRight = false
+
+	Player.blinded = false
+	self.oponent.blinded = false
+end
+
 function BattleState:update(dt)
 	local pt = self.timer
 	self.timer = pt - 2 * dt
 	if self.timer <= 0 then
 		self.counter:setCounter(self.sprites.shoot)
 		self.sounds.counterShoot:play()
-		self.turn = self.turn + 1
-
+		self.turn = self.turn + 1		
 		self:simulateBattle()
 		self.timer = self.decisionTime + 2
+		self:resetTurn()
 	end
 	if pt > 3 and self.timer < 3 then
 		self.counter:setCounter(self.sprites.three)
@@ -578,7 +603,7 @@ end
 
 -- Detecta o input do usuário
 function BattleState:keypressed(key, scancode, isrepeat)
-	-- TODO: remover isso
+	-- TODO: remover isso na versão final
 	if key == "return" or key == "space" then
 		SetGameCtx(CTX.VICTORY_SCREEN)
 	elseif key == "s" then
@@ -591,6 +616,14 @@ function BattleState:keypressed(key, scancode, isrepeat)
 	if num and num > 0 and num < 6 then
 		self:setAction(num)
 	end
+
+	if num and num >=6 and num <= 8 then
+		local itemIndex = num - 5
+		if Player.inventory.items[itemIndex] then
+			Player:useBuff(Player.inventory.items[itemIndex])
+			self.sounds.select:play()
+		end
+	end
 end
 
 function BattleState:setAction(num)
@@ -598,6 +631,13 @@ function BattleState:setAction(num)
 		Player.action = ACTION_IDX[num]
 	else
 		Player.action = ACTION.NONE
+	end
+
+	if Player.action == ACTION.ATK or Player.action == ACTION.HEAVY_ATK then
+		local stopwatch = Player:hasUpgrade(UPGRADE.STOPWATCH)
+		if stopwatch then
+			stopwatch:activate(Player, self.timer)
+		end
 	end
 
 	self.sounds.select:play()
