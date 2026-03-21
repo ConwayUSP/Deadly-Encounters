@@ -94,6 +94,10 @@ function applyAction(attacker, target)
 	elseif attackerAction == ACTION.DEFENSE then
 		attacker.defCount = attacker.defCount + 1
 	end
+
+	if attackerAction ~= ACTION.DEFENSE then
+		attacker.defCount = 0
+	end
 end
 
 function combatResult(player, oponent)
