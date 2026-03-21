@@ -18,3 +18,21 @@ end
 function compareFloats(a, b, epsilon)
     return math.abs(a - b) < epsilon
 end
+
+-- Chooses from a list of items using their respective weights
+function weightedChoice(items)
+    local total = 0
+    for _, item in ipairs(items) do
+        total = total + item.weight
+    end
+
+    -- probability
+    local p = math.random() * total
+
+    for _, item in ipairs(items) do
+        if p < item.weight then
+            return item.value
+        end
+        p = p - item.weight
+    end
+end

@@ -112,7 +112,7 @@ function ActionSlot.new(action, index, scale, screenW)
 	local totalWidth = 5 * slotWidth + 4 * slot.gap
 	local startX = (screenW - totalWidth) / 2
 	local x = startX + (index - 1) * (slotWidth + slot.gap) + slotWidth / 2
-	
+
 	slot.startX = startX
 	slot.originalPos = { x, y }
 	slot.pos = { x, y }
@@ -334,7 +334,7 @@ function BattleState:resetUI()
 
 	xOffset = centerSecondPart + self.healthBar.oponent.empty:getWidth() * self.healthBar.oponent.scale / 2
 	self.texts.oponentName = Text.new(string.upper(self.oponent.name), 32, { 0, 0, 0, 1 }, { xOffset, yOffset })
-	
+
 	local textOponentWidth = self.texts.oponentName:getDimensions()
 	local oponentUpgradesOwned = UpgradesOwned.new(self.oponent.inventory.upgrades, { xOffset - textOponentWidth - 20, yOffset }, -1)
 	self.texts.oponentName.pos[1] = self.texts.oponentName.pos[1] - textOponentWidth
@@ -346,7 +346,7 @@ function BattleState:resetUI()
 	-- items slots
 	local itemScale = 0.7
 	self.itemSlots = ItemSlot.new(Player.inventory.items, itemScale, { 0, screenH - 100 })
-	
+
 	local itemSlotW = self.itemSlots.socket:getWidth() * itemScale
 	-- action slots
 	local slotScale = 0.7
@@ -404,8 +404,8 @@ end
 
 function BattleState:load()
 	self:reset()
-	
-	-- sprites	
+
+	-- sprites
 	local background = love.graphics.newImage("assets/UI/combat/combat_bg.png")
 	self.sprites.bg = background
 
@@ -518,15 +518,6 @@ end
 
 -- Detecta o input do usuário
 function BattleState:keypressed(key, scancode, isrepeat)
-	-- TODO: remover isso
-	if key == "return" or key == "space" then
-		SetGameCtx(CTX.VICTORY_SCREEN)
-	elseif key == "s" then
-		SetGameCtx(CTX.SHOP)
-	elseif key == "l" then
-		self:shuffleActionSlots()
-	end
-
 	local num = tonumber(key)
 	if num and num > 0 and num < 6 then
 		self:setAction(num)

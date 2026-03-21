@@ -87,36 +87,37 @@ end
 -- Items
 ----------------------------------------
 
-function initFlashbang()
+function initFlashbang(quantity)
 	--local desc = "Cega o oponente, fazendo-o perder seu próximo turno"
 	local desc = "Blinds the opponent, making them lose their next turn"
-
+	local qnt = quantity or 1
 	local func = function(criatura, alvo)
 		alvo.action = ACTION.MISS
 		alvo.blinded = true
 	end
 
-	return ItemUpgrade.new(ITEM.FLASHBANG, desc, func, BUFF_TYPE.ITEM, 1)
+	return ItemUpgrade.new(ITEM.FLASHBANG, desc, func, BUFF_TYPE.ITEM, qnt)
 end
 
-function initPotion()
+function initPotion(quantity)
 	--local desc = "Restaura 10 HP"
 	local desc = "Restores 10 HP"
-
+	local qnt = quantity or 3
 	local func = function(criatura)
 		criatura.hp = math.min(criatura.maxHp, criatura.hp + 10)
 	end
 
-	return ItemUpgrade.new(ITEM.POTION, desc, func, BUFF_TYPE.ITEM, 3)
+	return ItemUpgrade.new(ITEM.POTION, desc, func, BUFF_TYPE.ITEM, qnt)
 end
 
-function initEnergyDrink()
+function initEnergyDrink(quantity)
 	--local desc = "Deixa o próximo ataque mais forte"
 	local desc = "Buffs your next attack"
+	local qnt = qnt or 1
 
 	local func = function(criatura)
 		criatura.dmgMult = criatura.dmgMult + 0.5
 	end
 
-	return ItemUpgrade.new(ITEM.ENERGY_DRINK, desc, func, BUFF_TYPE.ITEM, 1)
+	return ItemUpgrade.new(ITEM.ENERGY_DRINK, desc, func, BUFF_TYPE.ITEM, qnt)
 end

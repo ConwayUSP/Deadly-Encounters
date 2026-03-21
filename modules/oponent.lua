@@ -32,7 +32,7 @@ function Oponent.new(name, maxHP, maxCounters, items, upgrades, strategyFunc)
 	-- ativa os upgrades para o oponente já surgir buffado
 	for _, upgrade in pairs(oponent.inventory.upgrades) do
 		if upgrade.onStart then
-			upgrade:active(oponent)
+			upgrade:activate(oponent)
 		end
 	end
 
@@ -48,7 +48,21 @@ function Oponent:hasItem(itemId)
 	return false
 end
 
+function Oponent:getItem(buffId)
+	local item = self.inventory:get(buffId, BUFF_TYPE.ITEM)
+	return item
+end
+
+function Oponent:useItem(itemId)
+    local item = self:getItem(itemId)
+    if not item then
+    	print(itemId)
+    end
+    self:useBuff(item)
+end
+
 function Oponent:useBuff(buff)
+
 	if buff.quantity <= 0 then
 		return
 	end
@@ -58,6 +72,7 @@ function Oponent:useBuff(buff)
 end
 
 function Oponent:draw(pos)
+	print(self.action)
 	local animation = self.animations[self.action]
 	local quad = animation.frames[animation.currFrame]
 	local offset = {
@@ -70,19 +85,19 @@ end
 
 function generateOponentPool()
 	local pool = {
+		initOZard(),
 		initJoshua(),
 		initDjabo(),
-		initOZard(),
 		initLarry(),
 		initSebastiao(),
 		initAberration(),
 	}
 
 	-- randomiza a ordem dos oponentes
-	for i = #pool, 2, -1 do
-		local j = math.random(i)
-		pool[i], pool[j] = pool[j], pool[i]
-	end
+	-- for i = #pool, 2, -1 do
+	-- 	local j = math.random(i)
+	-- 	pool[i], pool[j] = pool[j], pool[i]
+	-- end
 	return pool
 end
 
