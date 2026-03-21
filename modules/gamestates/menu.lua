@@ -23,6 +23,8 @@ MenuState.timer = 0
 function MenuState:load()
 	local width, height = love.graphics.getDimensions()
 
+	GAMESTATE[CTX.BATTLE]:restartGame()
+
 	-- texto do título
 	self.texts.title = Text.new(
 		"Deadly Encounters",

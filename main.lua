@@ -35,7 +35,6 @@ function love.load()
 
 	-- carrega o estado inicial manualmente para usar uma transição
 	GAMESTATE[GameCtx]:load()
-	GAMESTATE[CTX.BATTLE]:restartGame()
 end
 
 function love.update(dt)

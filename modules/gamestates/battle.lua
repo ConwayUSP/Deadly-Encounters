@@ -288,8 +288,8 @@ function BattleState:restartGame()
 	self.oponentPool = generateOponentPool()
 	self.battleNum = 1
 	self.oponent = self.oponentPool[self.battleNum]
-	self:reset()
 	Player:reset()
+	self:reset()
 end
 
 function BattleState:reset()
@@ -298,83 +298,21 @@ function BattleState:reset()
 	self.timer = self.decisionTime * 2
 	self.turn = 1
 	self.hist = History.new()
+	self:resetUI()
 end
 
--- passa para o próximo oponente e reseta uns atributos
-function BattleState:nextBattle()
-	self.battleNum = self.battleNum + 1
-	self.oponent = self.oponentPool[self.battleNum]
-	self.texts = {}
-	self.timer = 0
-	self.turn = 1
-	self.hist = History.new()
-	if self.battleNum <= 2 then
-		self.decisionTime = 5
-	elseif self.battleNum <= 4 then
-		self.decisionTime = 4
-	else
-		self.decisionTime = 3
-	end
+function BattleState:resetUI()
+	self.upgradesOwned = {}
+	self.healthBar = {}
+	self.actionSlots = {}
+	self.itemSlots = nil
 
-	Player:resetForBattle()
-end
-
--- simula um confronto entre o player e o oponente, atualizando o historico do combate
-function BattleState:simulateBattle()
-	local turnResult = simulateTurn(Player, self.oponent, self.hist)
-	self.hist:addSnapshot(Player)
-
-	if turnResult == Combat.ONGOING then
-		return
-	end
-
-	if turnResult == Combat.WIN and BattleState.battleNum == 6 then
-		-- ganhar a sexta batalha == vitória
-		SetGameCtx(CTX.VICTORY_SCREEN)
-	elseif turnResult == Combat.LOSS then
-		SetGameCtx(CTX.DEATH_SCREEN)
-	elseif turnResult == Combat.WIN then
-		SetGameCtx(CTX.SHOP)
-	end
-end
-
-function BattleState:newCounterText(txt)
-	local width, height = love.graphics.getDimensions()
-	return Text.new(txt, 64, { 0.15, 0.10, 0.08, 1 }, { width / 2, height * 2 / 5 }, 0, 0, 1, function(text, dt)
-		text.scale = text.scale and text.scale + 3 * dt or 1
-	end)
-end
-
-function BattleState:load()
-	self:reset()
-
-	-- sounds
-	self.sounds.select = love.audio.newSource("sounds/select.wav", "static")
-
-	-- sprites
 	local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
-
-	local background = love.graphics.newImage("assets/UI/combat/combat_bg.png")
-	self.sprites.bg = background
 
 	-- coisa
 	self.sprites.coisa = love.graphics.newImage("assets/UI/combat/coisa.png")
 	local coisaW = self.sprites.coisa:getWidth()
 	local coisaScale = 0.65
-
-	-- sounds
-	self.sounds.counter3 = love.audio.newSource("sounds/counter_3.mp3", "static")
-	self.sounds.counter2 = love.audio.newSource("sounds/counter_2.mp3", "static")
-	self.sounds.counter1 = love.audio.newSource("sounds/counter_1.mp3", "static")
-	self.sounds.counterShoot = love.audio.newSource("sounds/counter_shoot.mp3", "static")
-
-	-- debug buffs
-	-- Player:getBuff(initShield())
-	-- Player:getBuff(initStopWatch())
-	-- Player:getBuff(initEnergyDrink())
-	-- Player:getBuff(initPotion())
-	-- Player:getBuff(initFlashbang())
-	-- self.oponent.inventory.upgrades = { initShield(), initTotem() }
 
 	-- health bars
 	xOffset = 40
@@ -419,9 +357,77 @@ function BattleState:load()
 	self.itemSlots.pos[1] = self.actionSlots[5]:getPosEnd() + self.itemSlots.socket:getWidth() * itemScale / 2
 end
 
+-- passa para o próximo oponente e reseta uns atributos
+function BattleState:nextBattle()
+	self.battleNum = self.battleNum + 1
+	self.oponent = self.oponentPool[self.battleNum]
+	self.texts = {}
+	self.timer = 0
+	self.turn = 1
+	self.hist = History.new()
+	if self.battleNum <= 2 then
+		self.decisionTime = 5
+	elseif self.battleNum <= 4 then
+		self.decisionTime = 4
+	else
+		self.decisionTime = 3
+	end
+
+	Player:resetForBattle()
+end
+
+-- simula um confronto entre o player e o oponente, atualizando o historico do combate
+function BattleState:simulateBattle()
+	local turnResult = simulateTurn(Player, self.oponent, self.hist)
+	self.hist:addSnapshot(Player)
+
+	if turnResult == Combat.ONGOING then
+		return
+	end
+
+	if turnResult == Combat.WIN and BattleState.battleNum == 6 then
+		-- ganhar a sexta batalha == vitória
+		SetGameCtx(CTX.VICTORY_SCREEN)
+	elseif turnResult == Combat.LOSS then
+		SetGameCtx(CTX.DEATH_SCREEN)
+	elseif turnResult == Combat.WIN then
+		SetGameCtx(CTX.SHOP)
+	end
+end
+
+function BattleState:newCounterText(txt)
+	local width, height = love.graphics.getDimensions()
+	return Text.new(txt, 64, { 0.15, 0.10, 0.08, 1 }, { width / 2, height * 2 / 5 }, 0, 0, 0.5, function(text, dt)
+		text.scale = text.scale and (text.scale + 2*dt) or 1
+	end)
+end
+
+function BattleState:load()
+	self:reset()
+	
+	-- sprites	
+	local background = love.graphics.newImage("assets/UI/combat/combat_bg.png")
+	self.sprites.bg = background
+
+	-- sounds
+	self.sounds.select = love.audio.newSource("sounds/select.wav", "static")
+	self.sounds.counter3 = love.audio.newSource("sounds/counter_3.mp3", "static")
+	self.sounds.counter2 = love.audio.newSource("sounds/counter_2.mp3", "static")
+	self.sounds.counter1 = love.audio.newSource("sounds/counter_1.mp3", "static")
+	self.sounds.counterShoot = love.audio.newSource("sounds/counter_shoot.mp3", "static")
+
+	-- debug buffs
+	-- Player:getBuff(initShield())
+	-- Player:getBuff(initStopWatch())
+	-- Player:getBuff(initEnergyDrink())
+	-- Player:getBuff(initPotion())
+	-- Player:getBuff(initFlashbang())
+	-- self.oponent.inventory.upgrades = { initShield(), initTotem() }
+end
+
 function BattleState:update(dt)
 	local pt = self.timer
-	self.timer = pt - dt
+	self.timer = pt - 2 * dt
 	if self.timer <= 0 then
 		self.texts.counterShoot = self:newCounterText("SHOOT!")
 		self.sounds.counterShoot:play()
