@@ -68,7 +68,6 @@ function ItemSlot:draw()
 				itemScale
 			)
 		end
-
 	end
 
 	if self.items[2] then
@@ -122,7 +121,7 @@ function ActionSlot.new(action, index, scale, screenW)
 	local totalWidth = 5 * slotWidth + 4 * slot.gap
 	local startX = (screenW - totalWidth) / 2
 	local x = startX + (index - 1) * (slotWidth + slot.gap) + slotWidth / 2
-	
+
 	slot.startX = startX
 	slot.originalPos = { x, y }
 	slot.pos = { x, y }
@@ -238,12 +237,12 @@ function HealthBar:draw()
 	if self.creature.shielded then
 		-- shield
 		love.graphics.draw(self.shielded, self.pos[1] - emptyW / 2, self.pos[2], 0, self.scale, self.scale)
-	else 
+	else
 		-- foreground (vida)
 		local hpRatio = self.creature.hp / self.creature.maxHp
 		local barWidth = emptyW * hpRatio
 		local offset = 0
-	
+
 		love.graphics.setScissor(
 			self.pos[1] - emptyW / 2 + offset,
 			self.pos[2],
@@ -296,7 +295,7 @@ CounterText.__index = CounterText
 function CounterText.new(pos)
 	local counterText = setmetatable({}, CounterText)
 	counterText.pos = pos
-	
+
 	counterText.counter = nil
 	counterText.scale = 1
 	counterText.isActive = false
@@ -319,7 +318,7 @@ function CounterText:update(dt)
 
 	if self.scale > 2 then
 		self.isActive = false
-	end	
+	end
 end
 
 function CounterText:draw()
@@ -331,7 +330,14 @@ function CounterText:draw()
 	local height = self.counter:getHeight()
 
 	love.graphics.setColor(1, 1, 1, 1)
-	love.graphics.draw(self.counter, self.pos.x - (width * self.scale) / 2, self.pos.y - (height * self.scale) / 2, 0, self.scale, self.scale)
+	love.graphics.draw(
+		self.counter,
+		self.pos.x - (width * self.scale) / 2,
+		self.pos.y - (height * self.scale) / 2,
+		0,
+		self.scale,
+		self.scale
+	)
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
@@ -354,7 +360,7 @@ BattleState.oponentPool = generateOponentPool()
 BattleState.battleNum = 1
 BattleState.oponent = BattleState.oponentPool[BattleState.battleNum]
 BattleState.decisionTime = 3
-BattleState.timer = BattleState.decisionTime * 2
+BattleState.timer = BattleState.decisionTime + 2
 BattleState.turn = 1
 BattleState.hist = History.new()
 
@@ -370,7 +376,7 @@ end
 function BattleState:reset()
 	self.texts = {}
 	self.decisionTime = 3
-	self.timer = self.decisionTime * 2
+	self.timer = self.decisionTime + 2
 	self.turn = 1
 	self.hist = History.new()
 	self:resetUI()
@@ -406,13 +412,15 @@ function BattleState:resetUI()
 	self.texts.playerName = Text.new(string.upper(Player.name), 32, { 0, 0, 0, 1 }, { xOffset, yOffset })
 
 	local textPlayerWidth = self.texts.playerName:getDimensions()
-	local playerUpgradesOwned = UpgradesOwned.new(Player.inventory.upgrades, { xOffset + textPlayerWidth + 20, yOffset }, 1)
+	local playerUpgradesOwned =
+		UpgradesOwned.new(Player.inventory.upgrades, { xOffset + textPlayerWidth + 20, yOffset }, 1)
 
 	xOffset = centerSecondPart + self.healthBar.oponent.empty:getWidth() * self.healthBar.oponent.scale / 2
 	self.texts.oponentName = Text.new(string.upper(self.oponent.name), 32, { 0, 0, 0, 1 }, { xOffset, yOffset })
-	
+
 	local textOponentWidth = self.texts.oponentName:getDimensions()
-	local oponentUpgradesOwned = UpgradesOwned.new(self.oponent.inventory.upgrades, { xOffset - textOponentWidth - 20, yOffset }, -1)
+	local oponentUpgradesOwned =
+		UpgradesOwned.new(self.oponent.inventory.upgrades, { xOffset - textOponentWidth - 20, yOffset }, -1)
 	self.texts.oponentName.pos[1] = self.texts.oponentName.pos[1] - textOponentWidth
 
 	-- upgrades owned
@@ -422,7 +430,7 @@ function BattleState:resetUI()
 	-- items slots
 	local itemScale = 0.7
 	self.itemSlots = ItemSlot.new(Player.inventory.items, itemScale, { 0, screenH - 100 })
-	
+
 	local itemSlotW = self.itemSlots.socket:getWidth() * itemScale
 	-- action slots
 	local slotScale = 0.7
@@ -474,14 +482,14 @@ end
 function BattleState:newCounterText(txt)
 	local width, height = love.graphics.getDimensions()
 	return Text.new(txt, 64, { 0.15, 0.10, 0.08, 1 }, { width / 2, height * 2 / 5 }, 0, 0, 0.5, function(text, dt)
-		text.scale = text.scale and (text.scale + 2*dt) or 1
+		text.scale = text.scale and (text.scale + 2 * dt) or 1
 	end)
 end
 
 function BattleState:load()
 	self:reset()
-	
-	-- sprites	
+
+	-- sprites
 	local background = love.graphics.newImage("assets/UI/combat/combat_bg.png")
 	self.sprites.bg = background
 	self.sprites.one = love.graphics.newImage("assets/UI/combat/1.png")
@@ -514,24 +522,28 @@ end
 
 function BattleState:update(dt)
 	local pt = self.timer
-	self.timer = pt - 2 * dt
+	self.timer = pt - dt
 	if self.timer <= 0 then
 		self.counter:setCounter(self.sprites.shoot)
 		self.sounds.counterShoot:play()
-		self.turn = self.turn + 1		
+		self.turn = self.turn + 1
 		self:simulateBattle()
 		self.timer = self.decisionTime + 2
 		self:resetTurn()
 	end
-	if pt > 3 and self.timer < 3 then
+	if pt > 2.25 and self.timer < 2.25 then
+		if self.turn ~= 1 then
+			Player.action = ACTION.MISS
+			self.oponent.action = ACTION.MISS
+		end
 		self.counter:setCounter(self.sprites.three)
 		self.sounds.counter3:play()
 	end
-	if pt > 2 and self.timer < 2 then
+	if pt > 1.5 and self.timer < 1.5 then
 		self.counter:setCounter(self.sprites.two)
 		self.sounds.counter2:play()
 	end
-	if pt > 1 and self.timer < 1 then
+	if pt > 0.75 and self.timer < 0.75 then
 		self.counter:setCounter(self.sprites.one)
 		self.sounds.counter1:play()
 	end
@@ -627,7 +639,7 @@ function BattleState:keypressed(key, scancode, isrepeat)
 		self:setAction(num)
 	end
 
-	if num and num >=6 and num <= 8 then
+	if num and num >= 6 and num <= 8 then
 		local itemIndex = num - 5
 		if Player.inventory.items[itemIndex] then
 			Player:useBuff(Player.inventory.items[itemIndex])

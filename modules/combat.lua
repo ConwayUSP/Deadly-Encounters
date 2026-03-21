@@ -58,6 +58,7 @@ function validateAction(creature, hist)
 		end
 	elseif action == ACTION.DEFENSE then
 		if creature.defCount >= 2 then
+			creature.defCount = 0
 			return true
 		end
 	end
@@ -76,7 +77,6 @@ function applyAction(attacker, target)
 		if targetAction == ACTION.COUNTER then
 			attack(attacker, target)
 			-- TODO: som contra-ataque
-
 		else
 			attack(target, attacker)
 			spendAmmo(attacker)
@@ -91,6 +91,8 @@ function applyAction(attacker, target)
 		end
 	elseif attackerAction == ACTION.COUNTER then
 		attacker.counters = attacker.counters - 1
+	elseif attackerAction == ACTION.DEFENSE then
+		attacker.defCount = attacker.defCount + 1
 	end
 end
 
@@ -184,12 +186,11 @@ function causeDamage(target, dmg, attacker)
 		local defibrillator = target:hasUpgrade(UPGRADE.DEFIBRILLATOR)
 		if defibrillator then
 			defibrillator:activate(target)
-		else 
+		else
 			target.hp = 0
 		end
 	else
 		target.hp = target.hp - dmg
 		-- TODO: som de dano
-
 	end
 end
