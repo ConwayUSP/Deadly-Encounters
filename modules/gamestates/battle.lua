@@ -199,11 +199,21 @@ function HealthBar.new(creature, pos, who)
 	healthBar.creature = creature
 	healthBar.pos = pos
 	healthBar.scale = 0.72
+	healthBar.targetRatio = 1
+	healthBar.currentRatio = 1
 
 	healthBar.empty = love.graphics.newImage("assets/UI/combat/empty_healthbar.png")
 	healthBar.full = love.graphics.newImage("assets/UI/combat/" .. who .. "_healthbar.png")
 
 	return healthBar
+end
+
+function HealthBar:update(dt)
+	local hpRatio = self.creature.hp / self.creature.maxHp
+	self.targetRatio = hpRatio
+
+	local speed = 6
+	self.currentRatio = self.currentRatio + (self.targetRatio - self.currentRatio) * (1 - math.exp(-speed * dt))
 end
 
 function HealthBar:draw()
@@ -216,7 +226,7 @@ function HealthBar:draw()
 
 	-- foreground (vida)
 	local hpRatio = self.creature.hp / self.creature.maxHp
-	local barWidth = emptyW * hpRatio
+	local barWidth = emptyW * self.currentRatio
 	local offset = 0
 
 	love.graphics.setScissor(
@@ -448,6 +458,10 @@ function BattleState:update(dt)
 	if pt > 1 and self.timer < 1 then
 		self.texts.counter1 = self:newCounterText("1")
 		self.sounds.counter1:play()
+	end
+
+	for _, healthBar in pairs(self.healthBar) do
+		healthBar:update(dt)
 	end
 
 	for _, slot in pairs(self.actionSlots) do
