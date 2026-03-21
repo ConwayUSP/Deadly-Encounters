@@ -16,7 +16,7 @@ UPGRADE.PARRY = "parry"
 UPGRADE.SHIELD = "shield"
 UPGRADE.DEFIBRILLATOR = "defibrillator"
 UPGRADE.REVERSE_CARD = "reverse card"
-UPGRADE.LUCK_TOTEM = "luck totem"
+UPGRADE.LUCKY_TOTEM = "lucky totem"
 UPGRADE.STOPWATCH = "stopwatch"
 
 ITEM = {}

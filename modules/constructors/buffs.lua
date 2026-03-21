@@ -2,6 +2,7 @@
 -- Importações de Módulos
 ----------------------------------------
 require("modules.buff")
+require("modules.combat")
 
 ----------------------------------------
 -- Upgrades
@@ -31,12 +32,13 @@ function initShield()
 end
 
 function initDefibrillator()
-	--local desc = "Ressuscita a criatura com 10 HP após ser derrotada"
-	local desc = "Ressurects you with 10 HP after being defeated"
+	--local desc = "Ressuscita a criatura com 20 HP após ser derrotada"
+	local desc = "Ressurects you with 20 HP after being defeated"
 
 	local func = function(criatura)
-		criatura.hp = 10
-		criatura.desfibrilated = true
+		criatura.hp = 20
+		criatura.defibrilated = true
+		-- TODO: som revivido
 	end
 
 	return ItemUpgrade.new(UPGRADE.DEFIBRILLATOR, desc, func, BUFF_TYPE.UPGRADE)
@@ -65,18 +67,18 @@ function initTotem()
 		end
 	end
 
-	return ItemUpgrade.new(UPGRADE.LUCK_TOTEM, desc, func, BUFF_TYPE.UPGRADE)
+	return ItemUpgrade.new(UPGRADE.LUCKY_TOTEM, desc, func, BUFF_TYPE.UPGRADE)
 end
 
 function initStopWatch()
 	--local desc = "Aumenta o dano se a habilidade for selecionada perto do tempo acabar"
 	local desc = "Increases damage if the ability is selected near the time runs out"
 
-	local func = function(criatura)
-		local decisionTime = criatura.desicionTime
-
-		if decisionTime < 0.5 then
-			criatura.dmgMult = criatura.dmgMult + 0.5
+	local func = function(criatura, time)
+		if time < 0.5 and not criatura.timedRight then
+			criatura.dmgMult = criatura.dmgMult + 0.2
+			criatura.timedRight = true
+			-- TODO: som disso?
 		end
 	end
 
@@ -94,6 +96,7 @@ function initFlashbang()
 	local func = function(criatura, alvo)
 		alvo.action = ACTION.MISS
 		alvo.blinded = true
+		-- TODO: som flashbang
 	end
 
 	return ItemUpgrade.new(ITEM.FLASHBANG, desc, func, BUFF_TYPE.ITEM, 1)
@@ -104,7 +107,8 @@ function initPotion()
 	local desc = "Restores 10 HP"
 
 	local func = function(criatura)
-		criatura.hp = math.min(criatura.maxHp, criatura.hp + 10)
+		cure(criatura)
+		-- TODO: som poção
 	end
 
 	return ItemUpgrade.new(ITEM.POTION, desc, func, BUFF_TYPE.ITEM, 3)
@@ -115,7 +119,8 @@ function initEnergyDrink()
 	local desc = "Buffs your next attack"
 
 	local func = function(criatura)
-		criatura.dmgMult = criatura.dmgMult + 0.5
+		criatura.dmgMult = criatura.dmgMult + 0.75
+		-- TODO: som energético
 	end
 
 	return ItemUpgrade.new(ITEM.ENERGY_DRINK, desc, func, BUFF_TYPE.ITEM, 1)

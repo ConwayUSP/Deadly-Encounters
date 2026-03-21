@@ -66,24 +66,27 @@ function validateAction(creature, hist)
 end
 
 --
-function applyAction(attacker, alvo)
+function applyAction(attacker, target)
 	local attackerAction = attacker.action
-	local targetAction = alvo.action
+	local targetAction = target.action
 
 	if attackerAction == ACTION.RECHARGE then
 		reload(attacker)
 	elseif attackerAction == ACTION.ATK then
 		if targetAction == ACTION.COUNTER then
-			attack(attacker)
+			attack(attacker, target)
+			-- TODO: som contra-ataque
+
 		else
-			attack(alvo)
+			attack(target, attacker)
 			spendAmmo(attacker)
 		end
 	elseif attackerAction == ACTION.HEAVY_ATK then
 		if targetAction == ACTION.COUNTER then
-			heavyAttack(attacker)
+			heavyAttack(attacker, target)
+			-- TODO: som contra-ataque
 		else
-			heavyAttack(alvo)
+			heavyAttack(target, attacker)
 			spendAmmo(attacker)
 		end
 	elseif attackerAction == ACTION.COUNTER then
@@ -116,28 +119,47 @@ end
 
 function reload(creature)
 	creature.ammo = creature.ammo + 1
+	-- TODO: som recarregar
 end
 
-function attack(alvo)
-	if alvo.action ~= ACTION.DEFENSE then
-		causeDamage(alvo, 40)
+function attack(target, attacker)
+	if target.action ~= ACTION.DEFENSE then
+		causeDamage(target, 40, attacker)
+	else
+		local parry = target:hasUpgrade(UPGRADE.PARRY)
+		if parry then
+			parry:activate(target, 1)
+		end
 	end
 end
 
-function heavyAttack(alvo)
-	if alvo.action ~= ACTION.DEFENSE then
-		causeDamage(alvo, 80)
+function heavyAttack(target, attacker)
+	if target.action ~= ACTION.DEFENSE then
+		causeDamage(target, 80, attacker)
 	else
-		causeDamage(alvo, 30)
+		local parry = target:hasUpgrade(UPGRADE.PARRY)
+		if parry then
+			parry:activate(target, 1)
+		end
+		causeDamage(target, 30, attacker)
 	end
 end
 
 function spendAmmo(creature)
+	local amount = 0
+
 	if creature.action == ACTION.ATK then
-		creature.ammo = creature.ammo - 1
+		amount = 1
 	elseif creature.action == ACTION.HEAVY_ATK then
-		creature.ammo = creature.ammo - 2
+		amount = 2
 	end
+
+	local totem = creature:hasUpgrade(UPGRADE.LUCKY_TOTEM)
+	if totem then
+		totem:activate(creature, amount)
+	end
+
+	creature.ammo = creature.ammo - amount
 end
 
 function cure(creature)
@@ -148,10 +170,26 @@ function cure(creature)
 	end
 end
 
-function causeDamage(creature, dmg)
-	if creature.hp - dmg < 0 then
-		creature.hp = 0
+function causeDamage(target, dmg, attacker)
+	if target.shielded then
+		target.shielded = false
+		-- TODO: som escudo quebrado
+
+		return
+	end
+
+	dmg = dmg * attacker.dmgMult
+
+	if target.hp - dmg < 0 then
+		local defibrillator = target:hasUpgrade(UPGRADE.DEFIBRILLATOR)
+		if defibrillator then
+			defibrillator:activate(target)
+		else 
+			target.hp = 0
+		end
 	else
-		creature.hp = creature.hp - dmg
+		target.hp = target.hp - dmg
+		-- TODO: som de dano
+
 	end
 end

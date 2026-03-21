@@ -99,8 +99,10 @@ ItemSlot.__index = ItemSlot
 
 function ItemSlot.new(item, pos, index)
 	local slot = setmetatable({}, ItemSlot)
+	local yOffset = -50
+
 	slot.item = item
-	slot.position = pos or { x = 0, y = 0 }
+	slot.position = { x = pos.x, y = pos.y + yOffset }
 	slot.scale = 0.75
 	slot.buyed = false
 	slot.selected = false
@@ -118,11 +120,13 @@ function ItemSlot.new(item, pos, index)
 	local x = pos.x - itemW / 2
 	local y = pos.y + slot.ropeH - 20 + (slot.frameW - itemH) / 2
 
-	slot.itemPosition = { x = x, y = y }
+	slot.itemPosition = { x = x, y = y + yOffset }
 	slot.timer = 0
 	slot.gravity = 1000
 	slot.velocityY = -300
 	slot.velocityX = 100 * (math.random() < 0.5 and -1 or 1)
+
+	slot.velocitySlotY = 330
 
 	return slot
 end
@@ -173,6 +177,10 @@ function ItemSlot:update(dt)
 		return
 	end
 
+	self.velocitySlotY = self.velocitySlotY - self.gravity * dt * 2
+	self.position.y = self.position.y + self.velocitySlotY * dt
+
+	self.position.y = self.position.y + self.velocitySlotY * dt
 	self.velocityY = self.velocityY + self.gravity * dt
 	self.itemPosition.y = self.itemPosition.y + self.velocityY * dt
 	self.itemPosition.x = self.itemPosition.x + self.velocityX * dt
