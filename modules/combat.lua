@@ -120,15 +120,15 @@ end
 
 function attack(alvo)
 	if alvo.action ~= ACTION.DEFENSE then
-		alvo.hp = alvo.hp - 10
+		causeDamage(alvo, 40)
 	end
 end
 
 function heavyAttack(alvo)
 	if alvo.action ~= ACTION.DEFENSE then
-		alvo.hp = alvo.hp - 20
+		causeDamage(alvo, 80)
 	else
-		alvo.hp = alvo.hp - 10
+		causeDamage(alvo, 30)
 	end
 end
 
@@ -141,5 +141,17 @@ function spendAmmo(creature)
 end
 
 function cure(creature)
-	creature.hp = creature.hp + 15
+	if creature.hp + 60 <= creature.maxHp then
+		creature.hp = creature.hp + 60
+	else
+		creature.hp = creature.maxHp
+	end
+end
+
+function causeDamage(creature, dmg)
+	if creature.hp - dmg < 0 then
+		creature.hp = 0
+	else
+		creature.hp = creature.hp - dmg
+	end
 end

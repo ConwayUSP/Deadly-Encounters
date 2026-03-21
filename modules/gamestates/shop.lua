@@ -6,7 +6,6 @@ require("modules.constructors.buffs")
 require("modules.utils")
 require("modules.fs")
 require("modules.shaders")
-local Player = require("modules.player")
 
 ----------------------------------------
 -- Constantes
@@ -41,10 +40,20 @@ function DescriptionCard.new(item, pos)
 	card.item = item
 	card.type = item.type
 	card.title = Text.new(capitalize(item.id), 24, { 1, 1, 1, 1 }, { x, y }, nil, false, math.huge, updateFunc)
-	card.description = Text.new(item.description, 16, { 1, 1, 1, 1 }, { x, y + 30 }, nil, false, math.huge, updateFunc, DESCRIPTION_WIDTH)
+	card.description = Text.new(
+		item.description,
+		16,
+		{ 1, 1, 1, 1 },
+		{ x, y + 30 },
+		nil,
+		false,
+		math.huge,
+		updateFunc,
+		DESCRIPTION_WIDTH
+	)
 
 	card.scale = 0.55
-	card.bg = love.graphics.newImage("assets/UI/shop/description_"..item.type..".png")
+	card.bg = love.graphics.newImage("assets/UI/shop/description_" .. item.type .. ".png")
 
 	card.position = { x = pos.x - 20 or 0, y = pos.y - 60 or 0 }
 	card.alpha = 0
@@ -95,10 +104,10 @@ function ItemSlot.new(item, pos, index)
 	slot.scale = 0.75
 	slot.buyed = false
 	slot.selected = false
-	
-	slot.rope = love.graphics.newImage("assets/UI/shop/rope_0"..index..".png")
-	slot.frame = love.graphics.newImage("assets/UI/shop/frame_0"..index..".png")
-	
+
+	slot.rope = love.graphics.newImage("assets/UI/shop/rope_0" .. index .. ".png")
+	slot.frame = love.graphics.newImage("assets/UI/shop/frame_0" .. index .. ".png")
+
 	slot.ropeW = slot.rope:getWidth() * slot.scale
 	slot.ropeH = slot.rope:getHeight() * slot.scale
 	slot.frameW = slot.frame:getWidth() * slot.scale
@@ -116,7 +125,6 @@ function ItemSlot.new(item, pos, index)
 	slot.velocityX = 100 * (math.random() < 0.5 and -1 or 1)
 
 	return slot
-	
 end
 
 function ItemSlot:draw()
@@ -130,26 +138,27 @@ function ItemSlot:draw()
 
 	local bobOffset = 0
 	local t = self.timer
-	
+
 	love.graphics.setShader()
+
+	-- frame
+	love.graphics.draw(self.frame, baseCenterX - self.frameW / 2, baseTopY, 0, self.scale, self.scale)
+
 	if self.selected then
 		-- love.graphics.setColor(1, 1, 1)
 		love.graphics.setShader(SHADER)
 		bobOffset = math.sin(t * 4) * 3
 	end
 
-	-- frame
+	-- item
 	love.graphics.draw(
-		self.frame,
-		baseCenterX - self.frameW / 2,
-		baseTopY,
+		self.item.sprite,
+		self.itemPosition.x,
+		self.itemPosition.y + bobOffset,
 		0,
 		self.scale,
 		self.scale
 	)
-
-	-- item
-	love.graphics.draw(self.item.sprite, self.itemPosition.x, self.itemPosition.y + bobOffset, 0, self.scale, self.scale)
 	love.graphics.setShader()
 end
 
@@ -231,7 +240,7 @@ ShopState.sprites = {}
 ShopState.texts = {}
 ShopState.sounds = {}
 ShopState.itemsForSale = {}
-ShopState.selectedItemIndex = 1
+ShopState.selectedItemIndex = 0
 ShopState.buyed = false
 ShopState.buyedIndex = -1
 ShopState.descriptionCards = {}
@@ -244,7 +253,9 @@ function ShopState:setPurchasedSlots(items)
 	self.purchasedSlots = {}
 
 	local count = #items
-	if count == 0 then return end
+	if count == 0 then
+		return
+	end
 
 	local rectSize = PURCHASED_SLOT_SIZE
 	local gap = 10
@@ -263,7 +274,7 @@ end
 
 function ShopState:load()
 	local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
-	self.sprites.bg = love.graphics.newImage("assets/UI/shop/market_bg.jpg")
+	self.sprites.bg = love.graphics.newImage("assets/UI/shop/shop_bg.png")
 	self.sprites.sign = love.graphics.newImage("assets/UI/shop/plate.png")
 	self.sprites.bag = love.graphics.newImage("assets/UI/shop/bag.png")
 
@@ -278,7 +289,7 @@ function ShopState:load()
 
 	self.sounds.bg:play()
 	self.sounds.bg:setLooping(true)
-	self.sounds.bg:setVolume(0.3)
+	self.sounds.bg:setVolume(0.5)
 
 	self.sounds.bell:play()
 
@@ -293,13 +304,23 @@ function ShopState:load()
 
 	local padding = 30
 	local xOffset = 150
-	self.texts.warning = Text.new("Press space to buy", 24, { 1, 1, 1, 1 }, { screenW - xOffset, screenH - padding }, nil, true, math.huge, blinkUpdate)
+	self.texts.warning = Text.new(
+		"Press space to buy",
+		24,
+		{ 1, 1, 1, 1 },
+		{ screenW - xOffset, screenH - padding },
+		nil,
+		true,
+		math.huge,
+		blinkUpdate
+	)
 
 	DESCRIPTIONS_TOTAL_WIDTH = DESCRIPTION_WIDTH * ITEMS_FOR_SALE + DESCRIPTION_GAP * (ITEMS_FOR_SALE - 1)
 	DESCRIPTION_START_X = (screenW - DESCRIPTIONS_TOTAL_WIDTH) / 2
 
-	Player:getBuff(initShield())
-	Player:getBuff(initPotion())
+	-- debug buffs
+	-- Player:getBuff(initShield())
+	-- Player:getBuff(initPotion())
 	-- Player:getBuff(initEnergyDrink())
 	-- Player:getBuff(initFlashbang())
 
@@ -328,11 +349,12 @@ function ShopState:randomizeItems()
 		if not pickedIndexes[index] then
 			pickedIndexes[index] = true
 			pickedCount = pickedCount + 1
-			
+
 			table.insert(self.itemsForSale, self.allItems[index])
 
 			-- coluna centralizada
-			local columnCenterX = (DESCRIPTION_START_X + DESCRIPTION_WIDTH / 2) + (pickedCount - 1) * (DESCRIPTION_WIDTH + DESCRIPTION_GAP)
+			local columnCenterX = (DESCRIPTION_START_X + DESCRIPTION_WIDTH / 2)
+				+ (pickedCount - 1) * (DESCRIPTION_WIDTH + DESCRIPTION_GAP)
 
 			-- descrição
 			local descX = columnCenterX - DESCRIPTION_WIDTH / 2
@@ -380,6 +402,7 @@ function ShopState:update(dt)
 	end
 
 	if self.timer <= 0 and self.buyed then
+		GAMESTATE[CTX.BATTLE]:nextBattle()
 		SetGameCtx(CTX.BATTLE)
 	end
 end
@@ -418,32 +441,29 @@ function ShopState:keypressed(key, scancode, isrepeat)
 		local selectedItem = self.itemsForSale[self.selectedItemIndex]
 		if selectedItem then
 			self:buyItem(selectedItem)
+			self:setPurchasedSlots(Player.inventory.items)
+			self.buyed = true
+			self.selectedItemIndex = 0
+			self.timer = 2
 			self.sounds.buy:play()
 		end
-
-		self:setPurchasedSlots(Player.inventory.items)
-		self:selectItemSlot(self.buyedIndex)
-		self.buyed = true
-		self.selectedItemIndex = -1
-		self.timer = 2
 	end
 end
 
 -- seleciona um dos itens dispoíveis para compra
 function ShopState:selectItem(index)
-
 	if self.buyed then
 		return
 	end
 
 	self.sounds.select:play()
-	
+
 	if index == self.selectedItemIndex then
-		self.selectedItemIndex = -1
+		self.selectedItemIndex = 0
 		return
 	end
 
-	if index >= 1 and index <= #self.itemsForSale then
+	if self.selectedItemIndex == 0 or index >= 1 and index <= #self.itemsForSale then
 		self.selectedItemIndex = index
 	end
 end
@@ -461,7 +481,7 @@ function ShopState:draw()
 	local drawX = (screenW - bgW * scale) / 2
 	local drawY = (screenH - bgH * scale) / 2
 	love.graphics.draw(bg, drawX, drawY, 0, scale, scale)
-	
+
 	-- bolsa
 	local bag = self.sprites.bag
 	local bagScale = 0.7

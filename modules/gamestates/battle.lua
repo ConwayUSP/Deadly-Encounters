@@ -8,6 +8,259 @@ require("modules.actions")
 require("modules.fs")
 
 ----------------------------------------
+-- Entidade ItemsSlot
+----------------------------------------
+
+ItemSlot = {}
+ItemSlot.__index = ItemSlot
+
+function ItemSlot.new(items, scale, pos)
+	local slot = setmetatable({}, ItemSlot)
+	slot.items = items
+	slot.scale = scale
+	slot.pos = pos
+
+	slot.socket = love.graphics.newImage("assets/UI/combat/consumables_socket.png")
+
+	return slot
+end
+
+function ItemSlot:draw()
+	love.graphics.setColor(1, 1, 1, 1)
+
+	local socketW = self.socket:getWidth() * self.scale
+	local socketH = self.socket:getHeight() * self.scale
+
+	love.graphics.draw(self.socket, self.pos[1] - socketW / 2, self.pos[2] - socketH / 2, 0, self.scale, self.scale)
+
+	local itemScale = 0.25
+	if self.items[1] then
+		local item = self.items[1]
+		local itemSprite = item.sprite
+		local itemW = itemSprite:getWidth() * itemScale
+		local itemH = itemSprite:getHeight() * itemScale
+		love.graphics.draw(
+			itemSprite,
+			self.pos[1] + socketW / 4 - itemW / 2 - 8,
+			self.pos[2] - itemH / 2,
+			0,
+			itemScale,
+			itemScale
+		)
+	end
+
+	if self.items[2] then
+		local item = self.items[2]
+		local itemSprite = item.sprite
+		local itemW = itemSprite:getWidth() * itemScale
+		local itemH = itemSprite:getHeight() * itemScale
+		love.graphics.draw(
+			itemSprite,
+			self.pos[1] - socketW / 4 - itemW / 2 + 4,
+			self.pos[2] - itemH / 2 - socketH / 4 + 8,
+			0,
+			itemScale,
+			itemScale
+		)
+	end
+
+	if self.items[3] then
+		local item = self.items[3]
+		local itemSprite = item.sprite
+		local itemW = itemSprite:getWidth() * itemScale
+		local itemH = itemSprite:getHeight() * itemScale
+		love.graphics.draw(
+			itemSprite,
+			self.pos[1] - socketW / 4 - itemW / 2 + 4,
+			self.pos[2] - itemH / 2 + socketH / 4,
+			0,
+			itemScale,
+			itemScale
+		)
+	end
+
+	-- reset de cor
+	love.graphics.setColor(1, 1, 1, 1)
+end
+
+----------------------------------------
+-- Entidade ActionSlot
+----------------------------------------
+
+ActionSlot = {}
+ActionSlot.__index = ActionSlot
+
+function ActionSlot.new(action, index, scale, screenW)
+	local slot = setmetatable({}, ActionSlot)
+	slot.action = action
+	slot.originalIndex = index
+	slot.index = index
+	slot.scale = scale
+	slot.screen = screenW
+
+	slot.active = false
+	slot.isMoving = false
+	slot.gap = 15
+
+	-- sprites
+	slot.socket = love.graphics.newImage("assets/UI/combat/action_socket.png")
+	slot.actionSprite = love.graphics.newImage("assets/UI/combat/" .. action .. ".png")
+
+	-- position
+	local y = love.graphics.getHeight() - 100
+	local slotWidth = slot.socket:getWidth() * scale
+	local totalWidth = 5 * slotWidth + 4 * slot.gap
+	local startX = (screenW - totalWidth) / 2
+	local x = startX + (index - 1) * (slotWidth + slot.gap) + slotWidth / 2
+	
+	slot.startX = startX
+	slot.originalPos = { x, y }
+	slot.pos = { x, y }
+	slot.targetPos = {}
+
+	return slot
+end
+
+function ActionSlot:moveTo(newIndex)
+	if newIndex < 1 or newIndex > 5 or newIndex == self.index then
+		return
+	end
+
+	local slotWidth = self.socket:getWidth() * self.scale
+	local newX = self.startX + (newIndex - 1) * (slotWidth + self.gap) + slotWidth / 2
+	self.targetPos = { newX, self.pos[2] }
+	self.isMoving = true
+	self.index = newIndex
+end
+
+function ActionSlot:resetPosition()
+	self.targetPos = { self.originalPos[1], self.originalPos[2] }
+	self.isMoving = true
+	self.index = self.originalIndex
+end
+
+function ActionSlot:getPosEnd()
+	return self.pos[1] + (self.socket:getWidth() * self.scale) / 2 + self.gap
+end
+
+function ActionSlot:update(dt)
+	if self.isMoving then
+		local dx = self.targetPos[1] - self.pos[1]
+		local dy = self.targetPos[2] - self.pos[2]
+		if math.abs(dx) < 1 and math.abs(dy) < 1 then
+			self.pos[1] = self.targetPos[1]
+			self.pos[2] = self.targetPos[2]
+			self.targetPos = {}
+			self.isMoving = false
+		else
+			self.pos[1] = self.pos[1] + dx * dt * 10
+			self.pos[2] = self.pos[2] + dy * dt * 10
+		end
+	end
+end
+
+function ActionSlot:draw()
+	love.graphics.setColor(1, 1, 1, 1)
+
+	if self.active then
+		love.graphics.setShader(brightnessShader)
+	end
+
+	local socketW = self.socket:getWidth() * self.scale
+	local socketH = self.socket:getHeight() * self.scale
+
+	local actionW = self.actionSprite:getWidth() * self.scale
+	local actionH = self.actionSprite:getHeight() * self.scale
+
+	love.graphics.draw(self.socket, self.pos[1] - socketW / 2, self.pos[2] - socketH / 2, 0, self.scale, self.scale)
+	love.graphics.draw(
+		self.actionSprite,
+		self.pos[1] - actionW / 2,
+		self.pos[2] - actionH / 2,
+		0,
+		self.scale,
+		self.scale
+	)
+
+	if self.active then
+		love.graphics.setShader()
+	end
+end
+
+----------------------------------------
+-- Entidade HealthBar
+----------------------------------------
+
+HealthBar = {}
+HealthBar.__index = HealthBar
+
+function HealthBar.new(creature, pos, who)
+	local healthBar = setmetatable({}, HealthBar)
+	healthBar.creature = creature
+	healthBar.pos = pos
+	healthBar.scale = 0.72
+
+	healthBar.empty = love.graphics.newImage("assets/UI/combat/empty_healthbar.png")
+	healthBar.full = love.graphics.newImage("assets/UI/combat/" .. who .. "_healthbar.png")
+
+	return healthBar
+end
+
+function HealthBar:draw()
+	love.graphics.setColor(1, 1, 1, 1)
+
+	local emptyW = self.empty:getWidth() * self.scale
+
+	-- background
+	love.graphics.draw(self.empty, self.pos[1] - emptyW / 2, self.pos[2], 0, self.scale, self.scale)
+
+	-- foreground (vida)
+	local hpRatio = self.creature.hp / self.creature.maxHp
+	local barWidth = emptyW * hpRatio
+	local offset = 0
+
+	love.graphics.setScissor(
+		self.pos[1] - emptyW / 2 + offset,
+		self.pos[2],
+		barWidth,
+		self.full:getHeight() * self.scale
+	)
+	love.graphics.draw(self.full, self.pos[1] - emptyW / 2, self.pos[2], 0, self.scale, self.scale)
+	love.graphics.setScissor()
+
+	-- reset de cor
+	love.graphics.setColor(1, 1, 1, 1)
+end
+
+----------------------------------------
+-- Entidade UpgradesOwned
+----------------------------------------
+
+UpgradesOwned = {}
+UpgradesOwned.__index = UpgradesOwned
+
+function UpgradesOwned.new(initialUpgrades, initialPos, direction)
+	local upgradesOwned = setmetatable({}, UpgradesOwned)
+
+	upgradesOwned.upgrades = initialUpgrades or {}
+	upgradesOwned.pos = initialPos
+	upgradesOwned.direction = direction
+	upgradesOwned.scale = 0.25
+
+	return upgradesOwned
+end
+
+function UpgradesOwned:draw()
+	local x, y = self.pos[1], self.pos[2]
+	local spacing = 0
+	local size = self.upgrades[1] and self.upgrades[1].sprite:getWidth() * self.scale or 0
+	for i, upgrade in ipairs(self.upgrades) do
+		x = x + self.direction * (size + spacing) * (i - 1)
+		love.graphics.draw(upgrade.sprite, x, y, 0, self.scale, self.scale)
+	end
+end
+
+----------------------------------------
 -- Estado do jogo no contexto de batalha
 ----------------------------------------
 
@@ -18,6 +271,10 @@ BattleState.__index = BattleState
 BattleState.sprites = {}
 BattleState.texts = {}
 BattleState.sounds = {}
+BattleState.upgradesOwned = {}
+BattleState.healthBar = {}
+BattleState.actionSlots = {}
+BattleState.itemSlots = nil
 BattleState.oponentPool = generateOponentPool()
 BattleState.battleNum = 1
 BattleState.oponent = BattleState.oponentPool[BattleState.battleNum]
@@ -27,15 +284,77 @@ BattleState.turn = 1
 BattleState.hist = History.new()
 
 -- para caso o jogo recomece
-function BattleState:reset()
-	self.texts = {}
+function BattleState:restartGame()
 	self.oponentPool = generateOponentPool()
 	self.battleNum = 1
 	self.oponent = self.oponentPool[self.battleNum]
+	Player:reset()
+	self:reset()
+end
+
+function BattleState:reset()
+	self.texts = {}
 	self.decisionTime = 3
 	self.timer = self.decisionTime * 2
 	self.turn = 1
 	self.hist = History.new()
+	self:resetUI()
+end
+
+function BattleState:resetUI()
+	self.upgradesOwned = {}
+	self.healthBar = {}
+	self.actionSlots = {}
+	self.itemSlots = nil
+
+	local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
+
+	-- coisa
+	self.sprites.coisa = love.graphics.newImage("assets/UI/combat/coisa.png")
+	local coisaW = self.sprites.coisa:getWidth()
+	local coisaScale = 0.65
+
+	-- health bars
+	xOffset = 40
+	local centerFirstPart = (screenW - coisaW * coisaScale * 0.5) / 4
+	local centerSecondPart = screenW - centerFirstPart
+	local healthBarYOffset = 80
+	local healthBarPlayer = HealthBar.new(Player, { centerFirstPart, healthBarYOffset }, "your")
+	local healthBarOponent = HealthBar.new(self.oponent, { centerSecondPart, healthBarYOffset }, "enemy")
+	self.healthBar.player = healthBarPlayer
+	self.healthBar.oponent = healthBarOponent
+
+	-- textos
+	local xOffset = centerFirstPart - self.healthBar.player.empty:getWidth() * self.healthBar.player.scale / 2
+	local yOffset = 135
+	self.texts.playerName = Text.new(string.upper(Player.name), 32, { 0, 0, 0, 1 }, { xOffset, yOffset })
+
+	local textPlayerWidth = self.texts.playerName:getDimensions()
+	local playerUpgradesOwned = UpgradesOwned.new(Player.inventory.upgrades, { xOffset + textPlayerWidth + 20, yOffset }, 1)
+
+	xOffset = centerSecondPart + self.healthBar.oponent.empty:getWidth() * self.healthBar.oponent.scale / 2
+	self.texts.oponentName = Text.new(string.upper(self.oponent.name), 32, { 0, 0, 0, 1 }, { xOffset, yOffset })
+	
+	local textOponentWidth = self.texts.oponentName:getDimensions()
+	local oponentUpgradesOwned = UpgradesOwned.new(self.oponent.inventory.upgrades, { xOffset - textOponentWidth - 20, yOffset }, -1)
+	self.texts.oponentName.pos[1] = self.texts.oponentName.pos[1] - textOponentWidth
+
+	-- upgrades owned
+	self.upgradesOwned.player = playerUpgradesOwned
+	self.upgradesOwned.oponent = oponentUpgradesOwned
+
+	-- items slots
+	local itemScale = 0.7
+	self.itemSlots = ItemSlot.new(Player.inventory.items, itemScale, { 0, screenH - 100 })
+	
+	local itemSlotW = self.itemSlots.socket:getWidth() * itemScale
+	-- action slots
+	local slotScale = 0.7
+	for i = 1, 5 do
+		self.actionSlots[i] = ActionSlot.new(ACTION_IDX[i], i, slotScale, screenW - itemSlotW)
+	end
+
+	self.itemSlots.pos[1] = self.actionSlots[5]:getPosEnd() + self.itemSlots.socket:getWidth() * itemScale / 2
 end
 
 -- passa para o próximo oponente e reseta uns atributos
@@ -78,28 +397,41 @@ end
 
 function BattleState:newCounterText(txt)
 	local width, height = love.graphics.getDimensions()
-	return Text.new(txt, 64, { 0.15, 0.10, 0.08, 1 }, { width / 2, height / 3 }, 0, 0, 1, function(text, dt)
-		text.scale = text.scale and text.scale + 3 * dt or 1
+	return Text.new(txt, 64, { 0.15, 0.10, 0.08, 1 }, { width / 2, height * 2 / 5 }, 0, 0, 0.5, function(text, dt)
+		text.scale = text.scale and (text.scale + 2*dt) or 1
 	end)
 end
 
 function BattleState:load()
-	local background = love.graphics.newImage("assets/UI/battle_bg.png")
+	self:reset()
+	
+	-- sprites	
+	local background = love.graphics.newImage("assets/UI/combat/combat_bg.png")
 	self.sprites.bg = background
 
 	-- sounds
+	self.sounds.select = love.audio.newSource("sounds/select.wav", "static")
 	self.sounds.counter3 = love.audio.newSource("sounds/counter_3.mp3", "static")
 	self.sounds.counter2 = love.audio.newSource("sounds/counter_2.mp3", "static")
 	self.sounds.counter1 = love.audio.newSource("sounds/counter_1.mp3", "static")
 	self.sounds.counterShoot = love.audio.newSource("sounds/counter_shoot.mp3", "static")
+
+	-- debug buffs
+	-- Player:getBuff(initShield())
+	-- Player:getBuff(initStopWatch())
+	-- Player:getBuff(initEnergyDrink())
+	-- Player:getBuff(initPotion())
+	-- Player:getBuff(initFlashbang())
+	-- self.oponent.inventory.upgrades = { initShield(), initTotem() }
 end
 
 function BattleState:update(dt)
 	local pt = self.timer
-	self.timer = pt - dt
+	self.timer = pt - 2 * dt
 	if self.timer <= 0 then
 		self.texts.counterShoot = self:newCounterText("SHOOT!")
 		self.sounds.counterShoot:play()
+		self.turn = self.turn + 1
 
 		self:simulateBattle()
 		self.timer = self.decisionTime + 2
@@ -118,6 +450,10 @@ function BattleState:update(dt)
 		self.sounds.counter1:play()
 	end
 
+	for _, slot in pairs(self.actionSlots) do
+		slot:update(dt)
+	end
+
 	for _, text in pairs(self.texts) do
 		if text.update then
 			text:update(dt)
@@ -127,22 +463,57 @@ function BattleState:update(dt)
 end
 
 function BattleState:draw()
-	love.graphics.clear(0.95, 0.90, 0.80)
+	local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
 
-	love.graphics.draw(self.sprites.bg)
+	-- background
+	local bg = self.sprites.bg
+	local bgW, bgH = bg:getWidth(), bg:getHeight()
+	local scale = math.max(screenW / bgW, screenH / bgH)
+	local drawX = (screenW - bgW * scale) / 2
+	local drawY = (screenH - bgH * scale) / 2
+	love.graphics.draw(bg, drawX, drawY, 0, scale, scale)
+
+	-- coisa
+	local coisa = self.sprites.coisa
+	local coisaW = coisa:getWidth()
+	local coisaScale = 0.65
+	local coisaX = screenW / 2 - (coisaW * coisaScale) / 2
+	local coisaY = 55
+	love.graphics.draw(coisa, coisaX, coisaY, 0, coisaScale, coisaScale)
+
+	-- reset de cor
+	love.graphics.setColor(1, 1, 1, 1)
+
+	-- player
+	local width, height = love.graphics.getDimensions()
+	local playerPos = { 2.5 * width / 12, height / 2 }
+	Player:draw(playerPos)
+
+	-- oponent
+	local oponentPos = { 9.5 * width / 12, height / 2 }
+	self.oponent:draw(oponentPos)
+
+	-- upgrades
+	self.upgradesOwned.player:draw()
+	self.upgradesOwned.oponent:draw()
+
+	-- health bars
+	self.healthBar.player:draw()
+	self.healthBar.oponent:draw()
+
+	-- action slots
+	for _, slot in pairs(self.actionSlots) do
+		slot:draw()
+	end
+
+	-- item slots
+	self.itemSlots:draw()
 
 	for _, text in pairs(self.texts) do
 		text:draw()
 	end
 
-	-- reset de cor
 	love.graphics.setColor(1, 1, 1, 1)
-
-	local width, height = love.graphics.getDimensions()
-	local playerPos = { 2 * width / 8, height / 2 }
-	Player:draw(playerPos)
-	local oponentPos = { 6 * width / 8, height / 2 }
-	self.oponent:draw(oponentPos)
 end
 
 -- Detecta o input do usuário
@@ -152,13 +523,45 @@ function BattleState:keypressed(key, scancode, isrepeat)
 		SetGameCtx(CTX.VICTORY_SCREEN)
 	elseif key == "s" then
 		SetGameCtx(CTX.SHOP)
+	elseif key == "l" then
+		self:shuffleActionSlots()
 	end
 
 	local num = tonumber(key)
 	if num and num > 0 and num < 6 then
-		Player.action = ACTION_IDX[num]
+		self:setAction(num)
 	end
-	-- TODO: lógica de decisão e poderes
+end
+
+function BattleState:setAction(num)
+	if Player.action ~= ACTION_IDX[num] then
+		Player.action = ACTION_IDX[num]
+	else
+		Player.action = ACTION.NONE
+	end
+
+	self.sounds.select:play()
+
+	for i, slot in pairs(self.actionSlots) do
+		if i == num then
+			slot.active = not slot.active
+		else
+			slot.active = false
+		end
+	end
+end
+
+function BattleState:shuffleActionSlots()
+	local usedIndexes = {}
+	for _, slot in pairs(self.actionSlots) do
+		local newIndex = math.random(1, 5)
+		while usedIndexes[newIndex] do
+			newIndex = math.random(1, 5)
+		end
+
+		usedIndexes[newIndex] = true
+		slot:moveTo(newIndex)
+	end
 end
 
 return BattleState

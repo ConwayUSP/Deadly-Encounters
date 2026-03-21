@@ -24,6 +24,17 @@ Player.action = ACTION.NONE
 Player.inventory = Inventory.new()
 initCreatureAnimations(Player)
 
+function Player:reset()
+	Player.hp = Player.maxHp
+	Player.maxCounters = 3
+	Player.counters = Player.maxCounters
+	Player.ammo = 0
+	Player.defCount = 0
+	Player.dmgMult = 1
+	Player.action = ACTION.NONE
+	Player.inventory = Inventory.new()
+end
+
 function Player:resetForBattle()
 	self.hp = self.maxHp
 	self.counters = self.maxCounters
@@ -34,7 +45,7 @@ function Player:resetForBattle()
 
 	for _, upgrade in pairs(self.inventory.upgrades) do
 		if upgrade.onStart then
-			upgrade:active(self)
+			upgrade:activate(self)
 		end
 	end
 
@@ -63,7 +74,8 @@ function Player:draw(pos)
 		x = animation.frameDim.width / 2,
 		y = animation.frameDim.height / 2,
 	}
-	love.graphics.draw(self.spriteSheets[self.action], quad, pos[1], pos[2], 0, 1, 1, offset.x, offset.y)
+	local scale = 0.75
+	love.graphics.draw(self.spriteSheets[self.action], quad, pos[1], pos[2], 0, scale, scale, offset.x, offset.y)
 end
 
 return Player
