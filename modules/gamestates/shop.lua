@@ -274,7 +274,7 @@ end
 
 function ShopState:load()
 	local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
-	self.sprites.bg = love.graphics.newImage("assets/UI/shop/market_bg.jpg")
+	self.sprites.bg = love.graphics.newImage("assets/UI/shop/shop_bg.png")
 	self.sprites.sign = love.graphics.newImage("assets/UI/shop/plate.png")
 	self.sprites.bag = love.graphics.newImage("assets/UI/shop/bag.png")
 
@@ -289,7 +289,7 @@ function ShopState:load()
 
 	self.sounds.bg:play()
 	self.sounds.bg:setLooping(true)
-	self.sounds.bg:setVolume(0.3)
+	self.sounds.bg:setVolume(0.5)
 
 	self.sounds.bell:play()
 
@@ -318,8 +318,9 @@ function ShopState:load()
 	DESCRIPTIONS_TOTAL_WIDTH = DESCRIPTION_WIDTH * ITEMS_FOR_SALE + DESCRIPTION_GAP * (ITEMS_FOR_SALE - 1)
 	DESCRIPTION_START_X = (screenW - DESCRIPTIONS_TOTAL_WIDTH) / 2
 
-	Player:getBuff(initShield())
-	Player:getBuff(initPotion())
+	-- debug buffs
+	-- Player:getBuff(initShield())
+	-- Player:getBuff(initPotion())
 	-- Player:getBuff(initEnergyDrink())
 	-- Player:getBuff(initFlashbang())
 
