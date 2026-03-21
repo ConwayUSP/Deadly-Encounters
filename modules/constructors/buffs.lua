@@ -65,7 +65,7 @@ function initTotem()
 		end
 	end
 
-	return ItemUpgrade.new(UPGRADE.LUCK_TOTEM, desc, func, BUFF_TYPE.UPGRADE)
+	return ItemUpgrade.new(UPGRADE.LUCKY_TOTEM, desc, func, BUFF_TYPE.UPGRADE)
 end
 
 function initStopWatch()
