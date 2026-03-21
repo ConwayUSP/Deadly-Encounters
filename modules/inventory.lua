@@ -49,6 +49,22 @@ function Inventory:insert(buff)
 	end
 end
 
+function Inventory:get(id, type)
+	if type == BUFF_TYPE.ITEM then
+		for _, v in pairs(self.items) do
+			if v.id == id then
+				return v
+			end
+		end
+	elseif type == BUFF_TYPE.UPGRADE then
+		for _, v in pairs(self.upgrades) do
+			if v.id == id then
+				return v
+			end
+		end
+	end
+end
+
 function Inventory:addToUsed(buff)
 	table.insert(self.usedQueue, buff)
 end

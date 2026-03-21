@@ -625,15 +625,6 @@ end
 
 -- Detecta o input do usuário
 function BattleState:keypressed(key, scancode, isrepeat)
-	-- TODO: remover isso na versão final
-	if key == "return" or key == "space" then
-		SetGameCtx(CTX.VICTORY_SCREEN)
-	elseif key == "s" then
-		SetGameCtx(CTX.SHOP)
-	elseif key == "l" then
-		self:shuffleActionSlots()
-	end
-
 	local num = tonumber(key)
 	if num and num > 0 and num < 6 then
 		self:setAction(num)
