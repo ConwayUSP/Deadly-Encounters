@@ -250,7 +250,7 @@ ShopState.sounds = {}
 ShopState.itemsForSale = {}
 ShopState.selectedItemIndex = 0
 ShopState.buyed = false
-ShopState.buyedIndex = -1
+ShopState.buyedIndex = 0
 ShopState.descriptionCards = {}
 ShopState.purchasedSlots = {}
 ShopState.timer = 0
@@ -378,15 +378,10 @@ function ShopState:randomizeItems()
 end
 
 -- faz o player comprar um item, adicionando ele ao inventário e removendo da loja
-function ShopState:buyItem(item)
-	for i, it in ipairs(self.itemsForSale) do
-		if it == item then
-			Player:getBuff(it)
-			table.remove(self.itemsForSale, i)
-			table.remove(self.descriptionCards, i)
-			break
-		end
-	end
+function ShopState:buyItem(item, idx)
+	Player:getBuff(item)
+	table.remove(self.itemsForSale, idx)
+	table.remove(self.descriptionCards, idx)
 
 	self.slots[self.selectedItemIndex].buyed = true
 	self.buyedIndex = self.selectedItemIndex
@@ -448,7 +443,7 @@ function ShopState:keypressed(key, scancode, isrepeat)
 	if key == "return" or key == "space" then
 		local selectedItem = self.itemsForSale[self.selectedItemIndex]
 		if selectedItem then
-			self:buyItem(selectedItem)
+			self:buyItem(selectedItem, self.selectedItemIndex)
 			self:setPurchasedSlots(Player.inventory.items)
 			self.buyed = true
 			self.selectedItemIndex = 0
