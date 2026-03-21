@@ -64,15 +64,14 @@ function Oponent:getItem(buffId)
 end
 
 function Oponent:useItem(itemId)
-    local item = self:getItem(itemId)
-    if not item then
-    	print(itemId)
-    end
-    self:useBuff(item)
+	local item = self:getItem(itemId)
+	if not item then
+		print(itemId)
+	end
+	self:useBuff(item)
 end
 
 function Oponent:useBuff(buff)
-
 	if buff.quantity <= 0 then
 		return
 	end
@@ -95,8 +94,8 @@ end
 
 function generateOponentPool()
 	local pool = {
-		initOZard(),
 		initJoshua(),
+		initOZard(),
 		initDjabo(),
 		initLarry(),
 		initSebastiao(),
@@ -104,10 +103,10 @@ function generateOponentPool()
 	}
 
 	-- randomiza a ordem dos oponentes
-	-- for i = #pool, 2, -1 do
-	-- 	local j = math.random(i)
-	-- 	pool[i], pool[j] = pool[j], pool[i]
-	-- end
+	for i = #pool - 1, 2, -1 do
+		local j = math.random(2, i)
+		pool[i], pool[j] = pool[j], pool[i]
+	end
 	return pool
 end
 
