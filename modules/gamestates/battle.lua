@@ -374,13 +374,14 @@ BattleState.itemSlots = nil
 BattleState.oponentPool = generateOponentPool()
 BattleState.battleNum = 1
 BattleState.oponent = BattleState.oponentPool[BattleState.battleNum]
-BattleState.decisionTime = 3
-BattleState.timer = BattleState.decisionTime + 2
+BattleState.decisionTime = 5
+BattleState.timer = BattleState.decisionTime
 BattleState.turn = 1
 BattleState.hist = History.new()
 BattleState.hasEnded = false
 BattleState.endTimer = math.huge
 BattleState.finalResult = nil
+BattleState.actionsEnabled = true
 
 -- para caso o jogo recomece
 function BattleState:restartGame()
@@ -393,13 +394,14 @@ end
 
 function BattleState:reset()
 	self.texts = {}
-	self.decisionTime = 3
-	self.timer = self.decisionTime + 2
+	self.decisionTime = 5
+	self.timer = self.decisionTime
 	self.turn = 1
 	self.hist = History.new()
 	self.hasEnded = false
 	self.endTimer = math.huge
 	self.finalResult = nil
+	self.actionsEnabled = true
 	self:resetUI()
 end
 
@@ -472,14 +474,9 @@ function BattleState:nextBattle()
 	self.hasEnded = false
 	self.endTimer = math.huge
 	self.finalResult = nil
+	self.actionsEnabled = true
 	self.hist = History.new()
-	if self.battleNum <= 2 then
-		self.decisionTime = 5
-	elseif self.battleNum <= 4 then
-		self.decisionTime = 4
-	else
-		self.decisionTime = 3
-	end
+	self.decisionTime = 5
 
 	Player:resetForBattle()
 end
@@ -557,19 +554,28 @@ function BattleState:update(dt)
 	if not self.hasEnded then
 		local pt = self.timer
 		self.timer = pt - dt
+
+		-- count chegou a 0 -> shoot
 		if self.timer <= 0 then
 			self.counter:setCounter(self.sprites.shoot)
 			self.sounds.counterShoot:play()
 			self.turn = self.turn + 1
 			self:simulateBattle()
-			self.timer = self.decisionTime + 2
+			self.timer = self.decisionTime
 			self:resetTurn()
+			self.actionsEnabled = false
 		end
+
+		-- count chegou a 4 -> volta ao idle e limpa os textos
+		if pt > 4 and self.timer < 4 and self.turn > 1 then
+			self:setAction(0)
+			self.oponent.action = ACTION.MISS
+			self.counter.isActive = false
+			self.actionsEnabled = true
+		end
+
+		-- count chegou a 2.25 -> inicia a contagem acelerada (3)
 		if pt > 2.25 and self.timer < 2.25 then
-			if self.turn ~= 1 then
-				self:setAction(0)
-				self.oponent.action = ACTION.MISS
-			end
 			self.counter:setCounter(self.sprites.three)
 			self.sounds.counter3:play()
 		end
@@ -586,27 +592,27 @@ function BattleState:update(dt)
 			healthBar:update(dt)
 		end
 
-    -- Disable buttons if player cannot perform action/Enable them if they can
-	if Player.ammo == 0 then
-		self.actionSlots[getIdFromValue(ACTION.ATK, ACTION_IDX)]:disable()
-	else
-		self.actionSlots[getIdFromValue(ACTION.ATK, ACTION_IDX)]:enable()
-	end
-	if Player.ammo < 2 then
-		self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:disable()
-	else
-		self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:enable()
-	end
-	if Player.defCount >= 2 then
-		self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:disable()
-	else
-		self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:enable()
-	end
-	if Player.counters == 0 then
-        self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:disable()
-    else
-        self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:enable()
-    end
+		-- Disable buttons if player cannot perform action/Enable them if they can
+		if Player.ammo == 0 then
+			self.actionSlots[getIdFromValue(ACTION.ATK, ACTION_IDX)]:disable()
+		else
+			self.actionSlots[getIdFromValue(ACTION.ATK, ACTION_IDX)]:enable()
+		end
+		if Player.ammo < 2 then
+			self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:disable()
+		else
+			self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:enable()
+		end
+		if Player.defCount >= 2 then
+			self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:disable()
+		else
+			self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:enable()
+		end
+		if Player.counters == 0 then
+			self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:disable()
+		else
+			self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:enable()
+		end
 
 		for _, slot in pairs(self.actionSlots) do
 			slot:update(dt)
@@ -672,11 +678,11 @@ function BattleState:draw()
 	end
 
 	-- ammo amount
-    local amountX = screenW / 5 + 10
+	local amountX = screenW / 5 + 10
 	local amountY = screenH - self.sprites.amount:getHeight() - 60
-    love.graphics.draw(self.sprites.amount, amountX, amountY, 0, 1, 1)
+	love.graphics.draw(self.sprites.amount, amountX, amountY, 0, 1, 1)
 
-    love.graphics.print(tostring(Player.ammo).."x", amountX + 60, amountY + 20)
+	love.graphics.print(tostring(Player.ammo) .. "x", amountX + 60, amountY + 20)
 	-- item slots
 	self.itemSlots:draw()
 
@@ -693,6 +699,10 @@ end
 
 -- Detecta o input do usuário
 function BattleState:keypressed(key, scancode, isrepeat)
+	if not self.actionsEnabled then
+		return
+	end
+
 	local num = tonumber(key)
 	if num and num > 0 and num < 6 then
 		-- ignore if slot is disabled
