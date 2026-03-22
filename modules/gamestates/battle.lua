@@ -2,6 +2,8 @@
 -- Importações de módulos
 ----------------------------------------
 require("modules.oponent")
+require("modules.utils")
+require("modules.shaders")
 require("modules.history")
 require("modules.combat")
 require("modules.actions")
@@ -207,7 +209,6 @@ function ActionSlot:draw()
 	elseif self.active then
 		love.graphics.setShader()
 	end
-
 end
 
 ----------------------------------------
@@ -377,6 +378,9 @@ BattleState.decisionTime = 3
 BattleState.timer = BattleState.decisionTime + 2
 BattleState.turn = 1
 BattleState.hist = History.new()
+BattleState.hasEnded = false
+BattleState.endTimer = math.huge
+BattleState.finalResult = nil
 
 -- para caso o jogo recomece
 function BattleState:restartGame()
@@ -393,6 +397,9 @@ function BattleState:reset()
 	self.timer = self.decisionTime + 2
 	self.turn = 1
 	self.hist = History.new()
+	self.hasEnded = false
+	self.endTimer = math.huge
+	self.finalResult = nil
 	self:resetUI()
 end
 
@@ -462,6 +469,9 @@ function BattleState:nextBattle()
 	self.texts = {}
 	self.timer = 0
 	self.turn = 1
+	self.hasEnded = false
+	self.endTimer = math.huge
+	self.finalResult = nil
 	self.hist = History.new()
 	if self.battleNum <= 2 then
 		self.decisionTime = 5
@@ -479,16 +489,24 @@ function BattleState:simulateBattle()
 	local turnResult = simulateTurn(Player, self.oponent, self.hist)
 	self.hist:addSnapshot(Player)
 
-	if turnResult == Combat.ONGOING then
-		return
+	if turnResult ~= Combat.ONGOING then
+		self.finalResult = turnResult
+		self.hasEnded = true
+		self.endTimer = 2
+		if turnResult == Combat.WIN then
+			self.oponent.action = ACTION.DEAD
+		else
+			Player.action = ACTION.DEAD
+		end
 	end
+end
 
-	if turnResult == Combat.WIN and BattleState.battleNum == 6 then
-		-- ganhar a sexta batalha == vitória
+function BattleState:endBattle()
+	if self.finalResult == Combat.WIN and BattleState.battleNum == 6 then
 		SetGameCtx(CTX.VICTORY_SCREEN)
-	elseif turnResult == Combat.LOSS then
+	elseif self.finalResult == Combat.LOSS then
 		SetGameCtx(CTX.DEATH_SCREEN)
-	elseif turnResult == Combat.WIN then
+	elseif self.finalResult == Combat.WIN then
 		SetGameCtx(CTX.SHOP)
 	end
 end
@@ -536,36 +554,37 @@ function BattleState:resetTurn()
 end
 
 function BattleState:update(dt)
-	local pt = self.timer
-	self.timer = pt - dt
-	if self.timer <= 0 then
-		self.counter:setCounter(self.sprites.shoot)
-		self.sounds.counterShoot:play()
-		self.turn = self.turn + 1
-		self:simulateBattle()
-		self.timer = self.decisionTime + 2
-		self:resetTurn()
-	end
-	if pt > 2.25 and self.timer < 2.25 then
-		if self.turn ~= 1 then
-			self:setAction(0)
-			self.oponent.action = ACTION.MISS
+	if not self.hasEnded then
+		local pt = self.timer
+		self.timer = pt - dt
+		if self.timer <= 0 then
+			self.counter:setCounter(self.sprites.shoot)
+			self.sounds.counterShoot:play()
+			self.turn = self.turn + 1
+			self:simulateBattle()
+			self.timer = self.decisionTime + 2
+			self:resetTurn()
 		end
-		self.counter:setCounter(self.sprites.three)
-		self.sounds.counter3:play()
-	end
-	if pt > 1.5 and self.timer < 1.5 then
-		self.counter:setCounter(self.sprites.two)
-		self.sounds.counter2:play()
-	end
-	if pt > 0.75 and self.timer < 0.75 then
-		self.counter:setCounter(self.sprites.one)
-		self.sounds.counter1:play()
-	end
+		if pt > 2.25 and self.timer < 2.25 then
+			if self.turn ~= 1 then
+				self:setAction(0)
+				self.oponent.action = ACTION.MISS
+			end
+			self.counter:setCounter(self.sprites.three)
+			self.sounds.counter3:play()
+		end
+		if pt > 1.5 and self.timer < 1.5 then
+			self.counter:setCounter(self.sprites.two)
+			self.sounds.counter2:play()
+		end
+		if pt > 0.75 and self.timer < 0.75 then
+			self.counter:setCounter(self.sprites.one)
+			self.sounds.counter1:play()
+		end
 
-	for _, healthBar in pairs(self.healthBar) do
-		healthBar:update(dt)
-	end
+		for _, healthBar in pairs(self.healthBar) do
+			healthBar:update(dt)
+		end
 
     -- Disable buttons if player cannot perform action/Enable them if they can
 	if Player.ammo == 0 then
@@ -589,8 +608,14 @@ function BattleState:update(dt)
         self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:enable()
     end
 
-	for _, slot in pairs(self.actionSlots) do
-		slot:update(dt)
+		for _, slot in pairs(self.actionSlots) do
+			slot:update(dt)
+		end
+	else
+		self.endTimer = self.endTimer - dt
+		if self.endTimer <= 0 then
+			self:endBattle()
+		end
 	end
 
 	-- texts
@@ -669,8 +694,8 @@ end
 -- Detecta o input do usuário
 function BattleState:keypressed(key, scancode, isrepeat)
 	local num = tonumber(key)
-    if num and num > 0 and num < 6 then
-    	-- ignore if slot is disabled
+	if num and num > 0 and num < 6 then
+		-- ignore if slot is disabled
 		if not self.actionSlots[num].disabled then
 			self:setAction(num)
 		end
