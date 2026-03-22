@@ -56,9 +56,5 @@ function love.keypressed(key, scancode, isrepeat)
 		love.event.quit()
 	end
 
-	if key == "s" then
-		SetGameCtx(CTX.SHOP)
-	end
-
 	GAMESTATE[GameCtx]:keypressed(key, scancode, isrepeat)
 end

@@ -448,11 +448,6 @@ function ShopState:keypressed(key, scancode, isrepeat)
 		self:selectItemSlot(3)
 	end
 
-	-- apenas para debug
-	if key == "r" then
-		self:reset()
-	end
-
 	if key == "return" or key == "space" then
 		local selectedItem = self.itemsForSale[self.selectedItemIndex]
 		if selectedItem then
