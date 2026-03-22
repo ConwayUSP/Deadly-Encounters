@@ -382,6 +382,63 @@ function CounterText:draw()
 end
 
 ----------------------------------------
+-- Entidade PlusAmmoText
+----------------------------------------
+
+PlusAmmoText = {}
+PlusAmmoText.__index = PlusAmmoText
+
+function PlusAmmoText.new(sprite, amount, pos)
+	local plus = setmetatable({}, PlusAmmoText)
+	plus.sprite = sprite
+	plus.amount = amount or 0
+	plus.pos = { pos[1], pos[2] }
+	plus.speedY = 60
+	plus.lifetime = 2.0
+	plus.timer = plus.lifetime
+	plus.alpha = 1
+	plus.font = returnFont(24)
+	plus.isOver = false
+
+	return plus
+end
+
+function PlusAmmoText:update(dt)
+	self.pos[2] = self.pos[2] - self.speedY * dt
+	self.timer = self.timer - dt
+	if self.timer <= 0 then
+		self.isOver = true
+		self.alpha = 0
+	else
+		self.alpha = self.timer / self.lifetime
+	end
+end
+
+function PlusAmmoText:draw()
+	local prevFont = love.graphics.getFont()
+	local r, g, b, a = love.graphics.getColor()
+
+	love.graphics.setFont(self.font or prevFont)
+	love.graphics.setColor(1, 1, 1, self.alpha)
+
+	local iconScale = 0.5
+	local iconW = self.sprite:getWidth() * iconScale
+	local iconH = self.sprite:getHeight() * iconScale
+	local x = self.pos[1]
+	local y = self.pos[2]
+
+	love.graphics.draw(self.sprite, x - iconW / 2, y - iconH / 2, 0, iconScale, iconScale)
+
+	local text = "+ " .. tostring(self.amount)
+	local textX = x + iconW / 2 + 8
+	local textY = y - iconH / 2
+	love.graphics.print(text, textX, textY)
+
+	love.graphics.setFont(prevFont)
+	love.graphics.setColor(r, g, b, a)
+end
+
+----------------------------------------
 -- Estado do jogo no contexto de batalha
 ----------------------------------------
 
@@ -396,6 +453,7 @@ BattleState.healthBar = {}
 BattleState.actionSlots = {}
 BattleState.counter = nil
 BattleState.itemSlots = nil
+BattleState.plusAmmoTexts = {}
 BattleState.oponentPool = generateOponentPool()
 BattleState.battleNum = 1
 BattleState.oponent = BattleState.oponentPool[BattleState.battleNum]
@@ -407,6 +465,7 @@ BattleState.hasEnded = false
 BattleState.endTimer = math.huge
 BattleState.finalResult = nil
 BattleState.actionsEnabled = true
+BattleState.font = returnFont(32)
 
 -- para caso o jogo recomece
 function BattleState:restartGame()
@@ -419,6 +478,7 @@ end
 
 function BattleState:reset()
 	self.texts = {}
+	self.plusAmmoTexts = {}
 	self.decisionTime = 5
 	self.timer = self.decisionTime
 	self.turn = 1
@@ -435,6 +495,7 @@ function BattleState:resetUI()
 	self.healthBar = {}
 	self.actionSlots = {}
 	self.itemSlots = nil
+	self.plusAmmoTexts = {}
 	self.counter = CounterText.new({ x = love.graphics.getWidth() / 2, y = love.graphics.getHeight() * 2 / 5 })
 
 	local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
@@ -487,6 +548,7 @@ function BattleState:resetUI()
 	end
 
 	self:verifyActionSlots()
+	self:updateActionSlots()
 
 	self.itemSlots.pos[1] = self.actionSlots[5]:getPosEnd() + self.itemSlots.socket:getWidth() * itemScale / 2
 end
@@ -543,6 +605,22 @@ function BattleState:simulateBattle()
 	end
 end
 
+function BattleState:addPlusAmmoText(criatura, amount)
+	if not amount or amount <= 0 then
+		return
+	end
+
+	local width, height = love.graphics.getDimensions()
+	local xOffset = 150
+	local yOffset = math.random(-50, 50)
+	local pos = criatura.name == Player.name and { 2.5 * width / 12 + xOffset, height / 2 + yOffset } or { 9.5 * width / 12 - xOffset, height / 2 + yOffset }
+	local textPos = { pos[1], pos[2] }
+
+	local sprite = self.sprites.amount
+	local plus = PlusAmmoText.new(sprite, amount, textPos)
+	table.insert(self.plusAmmoTexts, plus)
+end
+
 function BattleState:endBattle()
 	if self.finalResult == Combat.WIN and BattleState.battleNum == 6 then
 		SetGameCtx(CTX.VICTORY_SCREEN)
@@ -562,20 +640,9 @@ function BattleState:load()
 	self.sprites.two = love.graphics.newImage("assets/UI/combat/2.png")
 	self.sprites.three = love.graphics.newImage("assets/UI/combat/3.png")
 	self.sprites.shoot = love.graphics.newImage("assets/UI/combat/shoot.png")
-
 	self.sprites.amount = love.graphics.newImage("assets/UI/combat/amount.png")
-
 	-- texto ammo
 	local battle = self
-	self.texts.ammo = Text.new("", 32, { 1, 1, 1, 1 }, { 0, 0 }, 0, nil, nil, function(text, dt)
-		local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
-		local amountX = screenW / 5 + 10
-		local amountY = screenH - battle.sprites.amount:getHeight() - 60
-
-		text.pos[1] = amountX + 60
-		text.pos[2] = amountY + 20
-		text.content = tostring(Player.ammo) .. "x"
-	end)
 	
 	-- sounds
 	self.sounds.select = love.audio.newSource("sounds/select.wav", "static")
@@ -684,6 +751,15 @@ function BattleState:update(dt)
 
 	self.counter:update(dt)
 
+	-- plus ammo texts
+	for i = #self.plusAmmoTexts, 1, -1 do
+		local plus = self.plusAmmoTexts[i]
+		plus:update(dt)
+		if plus.isOver then
+			table.remove(self.plusAmmoTexts, i)
+		end
+	end
+
 	for _, healthBar in pairs(self.healthBar) do
 		healthBar:update(dt)
 	end
@@ -742,9 +818,14 @@ function BattleState:draw()
 	end
 
 	-- ammo amount
-	local amountX = screenW / 5 + 10
+	local amountX = screenW / 5 + 30
 	local amountY = screenH - self.sprites.amount:getHeight() - 60
 	love.graphics.draw(self.sprites.amount, amountX, amountY, 0, 1, 1)
+
+	local prevFont = love.graphics.getFont()
+	love.graphics.setFont(self.font)
+	love.graphics.print(tostring(Player.ammo).."x", amountX + self.sprites.amount:getWidth() + 5, amountY + self.sprites.amount:getHeight() / 2 - self.font:getHeight() / 2)
+	love.graphics.setFont(prevFont)
 
 	-- item slots
 	self.itemSlots:draw()
@@ -755,6 +836,12 @@ function BattleState:draw()
 			text:draw()
 		end
 	end
+
+	-- plus ammo texts
+	for _, plus in ipairs(self.plusAmmoTexts) do
+		plus:draw()
+	end
+
 	for _, text in pairs(self.texts) do
 		if not text.isShadow then
 			text:draw()
