@@ -20,11 +20,13 @@ MenuState.promptFont = nil
 MenuState.sounds = {}
 MenuState.timer = 0
 MenuState.logoScale = 0
+MenuState.musicTimer = 2.5
+MenuState.isFirstRender = true
 
 function MenuState:load()
 	local width, height = love.graphics.getDimensions()
-
 	GAMESTATE[CTX.BATTLE]:restartGame()
+	self.logoScale = 0
 
 	-- sprites
 	self.sprites.bg = love.graphics.newImage("assets/UI/menu/menu_bg.png")
@@ -49,6 +51,16 @@ function MenuState:load()
 	-- sounds
 	self.sounds.start = love.audio.newSource("sounds/start.mp3", "static")
 	self.sounds.start:setVolume(0.5)
+
+	if self.isFirstRender then
+		self.sounds.deadly_encounter = love.audio.newSource("sounds/deadly_encounter.mp3", "static")
+		self.sounds.deadly_encounter:play()
+		self.isFirstRender = false
+	end
+
+	self.sounds.bg = love.audio.newSource("sounds/menu_bg.wav", "stream")
+	self.sounds.bg:setLooping(true)
+	self.sounds.bg:setVolume(0.25)
 end
 
 function MenuState:update(dt)
@@ -56,6 +68,13 @@ function MenuState:update(dt)
 		self.timer = self.timer - dt
 		if self.timer <= 0 then
 			SetGameCtx(CTX.BATTLE)
+		end
+	end
+
+	if self.musicTimer > 0 then
+		self.musicTimer = self.musicTimer - dt
+		if self.musicTimer <= 0 then
+			self.sounds.bg:play()
 		end
 	end
 
@@ -67,6 +86,9 @@ function MenuState:update(dt)
 			self.logoScale = maxLogoScale
 		end
 	end
+
+	self.timeCount = (self.timeCount or 0) + dt
+	self.logoRotation = math.sin(self.timeCount * 2) * 0.02
 
 	self.texts.prompt:update(self.timer > 0 and 6 * dt or dt)
 
@@ -87,7 +109,7 @@ function MenuState:draw()
 	-- logo
 	local logo = self.sprites.logo
 	local logoW, logoH = logo:getWidth(), logo:getHeight()
-	love.graphics.draw(self.sprites.logo, screenW / 2, screenH * 0.2, 0, self.logoScale, self.logoScale, logoW / 2, logoH / 2)
+	love.graphics.draw(self.sprites.logo, screenW / 2, screenH * 0.2, self.logoRotation, self.logoScale, self.logoScale, logoW / 2, logoH / 2)
 
 	for key, text in pairs(self.texts) do
 		text:draw()
@@ -100,7 +122,8 @@ end
 function MenuState:keypressed(key, scancode, isrepeat)
 	if key == "return" or key == "space" then
 		if self.timer <= 0 then
-			self.timer = 1.0
+			self.timer = 1.75
+			self.sounds.bg:stop()
 			self.sounds.start:play()
 		end
 	end
