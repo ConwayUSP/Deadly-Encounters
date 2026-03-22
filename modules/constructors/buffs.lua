@@ -64,6 +64,7 @@ function initTotem()
 	local func = function(criatura, ammo)
 		if math.random() < CHANCE then
 			criatura.ammo = criatura.ammo + ammo
+			GAMESTATE[CTX.BATTLE]:addPlusAmmoText(criatura, ammo)
 		end
 	end
 
