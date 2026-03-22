@@ -36,3 +36,12 @@ function weightedChoice(items)
         p = p - item.weight
     end
 end
+
+-- Get the id in a table from a value
+function getIdFromValue(value, table)
+    for i, v in ipairs(table) do
+        if v == value then
+            return i
+        end
+    end
+end
