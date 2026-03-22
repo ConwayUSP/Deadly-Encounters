@@ -18,6 +18,13 @@ local function solveInvalidAction(action, self)
 	end
 end
 
+Oponents = {}
+Oponents.JOSHUA = "Joshua"
+Oponents.DJABO = "D'Jabo"
+Oponents.LARRY = "Larry"
+Oponents.OZARD = "O'Zard"
+Oponents.SEBASTIAO = "Sebastiao"
+Oponents.ABERRATION = "Aberracao"
 
 -- Emo
 function initJoshua()
@@ -45,7 +52,7 @@ function initJoshua()
 		return solveInvalidAction(choice, self)
 	end
 
-	return Oponent.new("Joshua", 200, 3, nil, nil, joshuaStrategy)
+	return Oponent.new(Oponents.JOSHUA, 200, 3, nil, nil, joshuaStrategy)
 end
 
 -- Djabo
@@ -91,7 +98,7 @@ function initDjabo()
 	end
 
 	-- Has flashbangs and reverse cards and more counters
-	return Oponent.new("D'Jabo", 200, 8, {initFlashbang(2)}, {initReverseCard()}, djaboStrategy)
+	return Oponent.new(Oponents.DJABO, 200, 8, {initFlashbang(2)}, {initReverseCard()}, djaboStrategy)
 end
 
 
@@ -124,7 +131,7 @@ function initLarry()
 	end
 
 	-- has totem
-	return Oponent.new("Larry", 200, 3, nil, {initTotem()}, larryStrategy)
+	return Oponent.new(Oponents.LARRY, 200, 3, nil, {initTotem()}, larryStrategy)
 end
 
 -- OZard
@@ -165,7 +172,7 @@ function initOZard()
 	end
 
 	-- add shield and potions
-	return Oponent.new("O'Zard", 200, 4, {initPotion()}, {initShield()}, ozardStrategy)
+	return Oponent.new(Oponents.OZARD, 200, 4, {initPotion()}, {initShield()}, ozardStrategy)
 end
 
 -- Cangaceiro
@@ -205,7 +212,7 @@ function initSebastiao()
 	end
 
 	-- sebastian, he can parry and drink energetic to give a boost
-	return Oponent.new("Sebastiao", 200, 3, {initEnergyDrink(3)}, {initParry()}, sebastiaoStrategy)
+	return Oponent.new(Oponents.SEBASTIAO, 200, 3, {initEnergyDrink(3)}, {initParry()}, sebastiaoStrategy)
 end
 
 -- Aberração
@@ -256,5 +263,5 @@ function initAberration()
 		return solveInvalidAction(choice, self)
 	end
 
-	return Oponent.new("Aberracao", 200, 3, nil, nil, aberrationStrategy)
+	return Oponent.new(Oponents.ABERRATION, 200, 3, nil, nil, aberrationStrategy)
 end

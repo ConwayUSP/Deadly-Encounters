@@ -8,6 +8,10 @@ Combat.LOSS = "derrota"
 Combat.ONGOING = "inacabado"
 Combat.sounds = {
 	SHIELD_BREAK = love.audio.newSource("sounds/shield_breaking.mp3", "static"),
+	DEATH_01 = love.audio.newSource("sounds/death_01.mp3", "static"),
+	DEATH_02 = love.audio.newSource("sounds/death_02.mp3", "static"),
+	DEATH_03 = love.audio.newSource("sounds/death_03.mp3", "static"),
+	DEATH_BOSS = love.audio.newSource("sounds/death_boss.mp3", "static"),
 	-- COUNTER = love.audio.newSource("sounds/counter.mp3", "static"),
 	-- ATTACK = love.audio.newSource("sounds/attack.mp3", "static"),
 	-- HEAVY_ATTACK = love.audio.newSource("sounds/heavy_attack.mp3", "static"),
@@ -201,6 +205,17 @@ function causeDamage(target, dmg, attacker)
 		else
 			target.hp = 0
 			target.action = ACTION.DEAD
+
+			if target.name == Oponents.ABERRATION then
+				Combat.sounds.DEATH_BOSS:play()
+			else
+				local deathSounds = {
+					Combat.sounds.DEATH_01,
+					Combat.sounds.DEATH_02,
+					Combat.sounds.DEATH_03,
+				}
+				deathSounds[math.random(#deathSounds)]:play()
+			end
 		end
 	else
 		target.hp = target.hp - dmg
