@@ -66,7 +66,7 @@ end
 function Oponent:useItem(itemId)
 	local item = self:getItem(itemId)
 	if not item then
-		print(itemId)
+		return
 	end
 	self:useBuff(item)
 end
@@ -81,7 +81,6 @@ function Oponent:useBuff(buff)
 end
 
 function Oponent:draw(pos)
-	print(self.action)
 	local animation = self.animations[self.action]
 	local quad = animation.frames[animation.currFrame]
 	local offset = {
@@ -103,7 +102,7 @@ function generateOponentPool()
 	}
 
 	-- randomiza a ordem dos oponentes
-	for i = #pool - 1, 2, -1 do
+	for i = #pool - 2, 3, -1 do
 		local j = math.random(2, i)
 		pool[i], pool[j] = pool[j], pool[i]
 	end
