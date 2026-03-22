@@ -10,6 +10,7 @@ ACTION.HEAVY_ATK = "ataque_pesado"
 ACTION.DEFENSE = "defesa"
 ACTION.COUNTER = "contra_ataque"
 ACTION.MISS = "vacilo"
+ACTION.DEAD = "morto"
 
 ACTION_IDX = {}
 ACTION_IDX[1] = ACTION.ATK
