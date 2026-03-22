@@ -12,7 +12,7 @@ require("modules.fs")
 FinalScreen = {}
 FinalScreen.__index = FinalScreen
 
-function FinalScreen:new(title, prompt, timer)
+function FinalScreen:new(prompt, timer)
 	local screen = setmetatable({}, FinalScreen)
 	local width, height = love.graphics.getDimensions()
 

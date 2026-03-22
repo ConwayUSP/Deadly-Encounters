@@ -4,8 +4,8 @@ local DeathState = {}
 DeathState.__index = DeathState
 
 DeathState.sprites = {}
+DeathState.texts = {}
 DeathState.sounds = {}
-
 DeathState.screen = nil
 
 function DeathState:load()
@@ -16,7 +16,7 @@ function DeathState:load()
 	self.readyToPlay = false
 
 	-- sprites
-	self.screen = FinalScreen:new(self.texts.title, self.texts.prompt, self.timer)
+	self.screen = FinalScreen:new(self.texts.prompt, self.timer)
 	self.sprites.bg = love.graphics.newImage("assets/UI/death/death_bg.png")
 
 	-- sounds
@@ -42,7 +42,6 @@ function DeathState:update(dt)
 end
 
 function DeathState:draw()
-	-- love.graphics.setColor(0.267, 0.267, 0.267)
 	local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
 
 	-- background
