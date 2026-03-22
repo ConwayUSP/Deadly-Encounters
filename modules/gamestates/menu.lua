@@ -19,35 +19,25 @@ MenuState.titleFont = nil
 MenuState.promptFont = nil
 MenuState.sounds = {}
 MenuState.timer = 0
+MenuState.logoScale = 0
+MenuState.musicTimer = 2.5
+MenuState.isFirstRender = true
 
 function MenuState:load()
 	local width, height = love.graphics.getDimensions()
-
 	GAMESTATE[CTX.BATTLE]:restartGame()
+	self.logoScale = 0
 
-	-- texto do título
-	self.texts.title = Text.new(
-		"Deadly Encounters",
-		64,
-		{ 0.15, 0.10, 0.08, 1 },
-		{ width / 2, height / 3 },
-		0,
-		true,
-		math.huge,
-		function(text, dt)
-			text.time = (text.time or 0) + dt
-			local rotateDeg = math.sin(text.time * 2) * 2
-			text.rotation = math.rad(rotateDeg)
-			text.scale = 1 + 0.05 * math.sin(text.time * 0.5)
-		end
-	)
+	-- sprites
+	self.sprites.bg = love.graphics.newImage("assets/UI/menu/menu_bg.png")
+	self.sprites.logo = love.graphics.newImage("assets/UI/menu/logo.png")
 
 	-- texto do prompt
 	self.texts.prompt = Text.new(
 		"Press Enter or Space to Play",
-		32,
-		{ 0.15, 0.10, 0.08, 1 },
-		{ width / 2, height * 0.6 },
+		36,
+		{ 1, 1, 1, 1 },
+		{ width / 2, height * 0.9 },
 		0,
 		true,
 		math.huge,
@@ -61,6 +51,16 @@ function MenuState:load()
 	-- sounds
 	self.sounds.start = love.audio.newSource("sounds/start.mp3", "static")
 	self.sounds.start:setVolume(0.5)
+
+	if self.isFirstRender then
+		self.sounds.deadly_encounter = love.audio.newSource("sounds/deadly_encounter.mp3", "static")
+		self.sounds.deadly_encounter:play()
+		self.isFirstRender = false
+	end
+
+	self.sounds.bg = love.audio.newSource("sounds/menu_bg.wav", "stream")
+	self.sounds.bg:setLooping(true)
+	self.sounds.bg:setVolume(0.25)
 end
 
 function MenuState:update(dt)
@@ -71,15 +71,45 @@ function MenuState:update(dt)
 		end
 	end
 
-	self.texts.title:update(dt)
+	if self.musicTimer > 0 then
+		self.musicTimer = self.musicTimer - dt
+		if self.musicTimer <= 0 then
+			self.sounds.bg:play()
+		end
+	end
+
+	local maxLogoScale = 0.8
+	local speed = 3
+	if self.logoScale < maxLogoScale then
+		self.logoScale = self.logoScale + (maxLogoScale - self.logoScale) * (1 - math.exp(-speed * dt))
+		if self.logoScale > maxLogoScale then
+			self.logoScale = maxLogoScale
+		end
+	end
+
+	self.timeCount = (self.timeCount or 0) + dt
+	self.logoRotation = math.sin(self.timeCount * 2) * 0.02
+
 	self.texts.prompt:update(self.timer > 0 and 6 * dt or dt)
 
 	cleanUpTexts(self.texts)
 end
 
 function MenuState:draw()
-	-- fundo em tom bege suave
-	love.graphics.clear(0.95, 0.90, 0.80)
+	local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
+
+		-- background
+	local bg = self.sprites.bg
+	local bgW, bgH = bg:getWidth(), bg:getHeight()
+	local scale = math.max(screenW / bgW, screenH / bgH)
+	local drawX = (screenW - bgW * scale) / 2
+	local drawY = (screenH - bgH * scale) / 2
+	love.graphics.draw(bg, drawX, drawY, 0, scale, scale)
+
+	-- logo
+	local logo = self.sprites.logo
+	local logoW, logoH = logo:getWidth(), logo:getHeight()
+	love.graphics.draw(self.sprites.logo, screenW / 2, screenH * 0.2, self.logoRotation, self.logoScale, self.logoScale, logoW / 2, logoH / 2)
 
 	for key, text in pairs(self.texts) do
 		text:draw()
@@ -92,7 +122,8 @@ end
 function MenuState:keypressed(key, scancode, isrepeat)
 	if key == "return" or key == "space" then
 		if self.timer <= 0 then
-			self.timer = 1.0
+			self.timer = 1.75
+			self.sounds.bg:stop()
 			self.sounds.start:play()
 		end
 	end

@@ -22,6 +22,8 @@ Player.defCount = 0
 Player.dmgMult = 1
 Player.action = ACTION.NONE
 Player.inventory = Inventory.new()
+Player.blinkDuration = 2
+Player.blinkTimer = 0
 initCreatureAnimations(Player)
 
 function Player:reset()
@@ -33,6 +35,7 @@ function Player:reset()
 	Player.dmgMult = 1
 	Player.action = ACTION.NONE
 	Player.inventory = Inventory.new()
+	Player.blinkTimer = 0
 end
 
 function Player:resetForBattle()
@@ -42,6 +45,7 @@ function Player:resetForBattle()
 	self.defCount = 0
 	self.dmgMult = 1
 	self.action = ACTION.NONE
+	self.blinkTimer = 0
 
 	for _, upgrade in pairs(self.inventory.upgrades) do
 		if upgrade.onStart then
@@ -85,6 +89,14 @@ function Player:draw(pos)
 		y = animation.frameDim.height / 2,
 	}
 	local scale = 0.75
+	local blinking = self.blinkTimer and self.blinkTimer > 0
+	if blinking then
+		local t = (self.blinkDuration or 2) - self.blinkTimer
+		local phase = math.floor(t * 10) % 2
+		if phase == 1 then
+			return
+		end
+	end
 	love.graphics.draw(self.spriteSheets[self.action], quad, pos[1], pos[2], 0, scale, scale, offset.x, offset.y)
 end
 

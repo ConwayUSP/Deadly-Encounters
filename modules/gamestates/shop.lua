@@ -29,7 +29,7 @@ DescriptionCard.__index = DescriptionCard
 
 function DescriptionCard.new(item, pos)
 	local card = setmetatable({}, DescriptionCard)
-	local x, y = pos.x, pos.y
+	local x, y = pos.x, pos.y - 30
 
 	local function updateFunc(text, _, descCard)
 		local color = text.color or { 0, 0, 0, 1 }
@@ -55,7 +55,7 @@ function DescriptionCard.new(item, pos)
 	card.scale = 0.55
 	card.bg = love.graphics.newImage("assets/UI/shop/description_" .. item.type .. ".png")
 
-	card.position = { x = pos.x - 20 or 0, y = pos.y - 60 or 0 }
+	card.position = { x = x - 20 or 0, y = y - 60 or 0 }
 	card.alpha = 0
 	card.fadeDuration = 0.2
 	return card
@@ -235,6 +235,7 @@ ShopState.__index = ShopState
 
 -- todos os itens disponíves à venda
 ShopState.allItems = {
+	initParry(),
 	initShield(),
 	initDefibrillator(),
 	initReverseCard(),
@@ -311,17 +312,19 @@ function ShopState:load()
 	end
 
 	local padding = 30
-	local xOffset = 150
 	self.texts.warning = Text.new(
 		"Press space to buy",
-		24,
+		48,
 		{ 1, 1, 1, 1 },
-		{ screenW - xOffset, screenH - padding },
+		{ screenW - 150, screenH - padding },
 		nil,
 		true,
 		math.huge,
 		blinkUpdate
 	)
+	local textWidth, textHeight = self.texts.warning:getDimensions()
+	self.texts.warning.pos[1] = screenW - textWidth/2 - padding
+	self.texts.warning.pos[2] = screenH - padding - textHeight/2
 
 	DESCRIPTIONS_TOTAL_WIDTH = DESCRIPTION_WIDTH * ITEMS_FOR_SALE + DESCRIPTION_GAP * (ITEMS_FOR_SALE - 1)
 	DESCRIPTION_START_X = (screenW - DESCRIPTIONS_TOTAL_WIDTH) / 2
@@ -352,7 +355,8 @@ end
 function ShopState:randomizeItems()
 	local pickedIndexes = {}
 	local pickedCount = 0
-	while pickedCount < ITEMS_FOR_SALE do
+	local maxForSale = math.min(ITEMS_FOR_SALE, #self.allItems)
+	while pickedCount < maxForSale do
 		local index = math.random(1, #self.allItems)
 		if not pickedIndexes[index] then
 			pickedIndexes[index] = true
@@ -380,6 +384,15 @@ end
 -- faz o player comprar um item, adicionando ele ao inventário e removendo da loja
 function ShopState:buyItem(item, idx)
 	Player:getBuff(item)
+
+	-- remove da lista global
+	for i, baseItem in ipairs(self.allItems) do
+		if baseItem == item then
+			table.remove(self.allItems, i)
+			break
+		end
+	end
+
 	table.remove(self.itemsForSale, idx)
 	table.remove(self.descriptionCards, idx)
 
@@ -433,11 +446,6 @@ function ShopState:keypressed(key, scancode, isrepeat)
 	elseif key == "3" then
 		self:selectItem(3)
 		self:selectItemSlot(3)
-	end
-
-	-- apenas para debug
-	if key == "r" then
-		self:reset()
 	end
 
 	if key == "return" or key == "space" then

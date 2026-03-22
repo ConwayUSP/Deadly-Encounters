@@ -8,6 +8,16 @@ require("modules.combat")
 -- Upgrades
 ----------------------------------------
 
+local buffSounds = {
+	-- [UPGRADE.STOPWATCH] = love.audio.newSource("sounds/stopwatch.mp3", "static"),
+	[UPGRADE.PARRY] = love.audio.newSource("sounds/parry.mp3", "static"),
+	[UPGRADE.LUCKY_TOTEM] = love.audio.newSource("sounds/lucky_totem.mp3", "static"),
+	[UPGRADE.DEFIBRILLATOR] = love.audio.newSource("sounds/defibrillator.mp3", "static"),
+	[ITEM.FLASHBANG] = love.audio.newSource("sounds/flashbang.mp3", "static"),
+	[ITEM.ENERGY_DRINK] = love.audio.newSource("sounds/energy_drink.mp3", "static"),
+	[ITEM.POTION] = love.audio.newSource("sounds/potion.mp3", "static"),
+}
+
 function initParry()
 	--local desc = "Uma defesa bem sucecedida contra o ataque inimigo rouba as munições do oponente para si"
 	local desc = "A successful defense against the enemy's attack steals the attack's ammo for yourself"
@@ -15,6 +25,8 @@ function initParry()
 	-- a verificação da defesa é feita no resultado do combate
 	local func = function(criatura, ammo)
 		criatura.ammo = criatura.ammo + ammo
+		GAMESTATE[CTX.BATTLE]:addPlusAmmoText(criatura, ammo)
+		buffSounds[UPGRADE.PARRY]:play()
 	end
 
 	return ItemUpgrade.new(UPGRADE.PARRY, desc, func, BUFF_TYPE.UPGRADE)
@@ -38,7 +50,8 @@ function initDefibrillator()
 	local func = function(criatura)
 		criatura.hp = 20
 		criatura.defibrilated = true
-		-- TODO: som revivido
+		criatura.inventory:removeUpgrade(UPGRADE.DEFIBRILLATOR)
+		buffSounds[UPGRADE.DEFIBRILLATOR]:play()
 	end
 
 	return ItemUpgrade.new(UPGRADE.DEFIBRILLATOR, desc, func, BUFF_TYPE.UPGRADE)
@@ -50,6 +63,7 @@ function initReverseCard()
 
 	local func = function(criatura)
 		criatura.maxCounters = criatura.maxCounters + 1
+		criatura.counters = criatura.maxCounters
 	end
 
 	return ItemUpgrade.new(UPGRADE.REVERSE_CARD, desc, func, BUFF_TYPE.UPGRADE, nil, true)
@@ -65,6 +79,7 @@ function initTotem()
 		if math.random() < CHANCE then
 			criatura.ammo = criatura.ammo + ammo
 			GAMESTATE[CTX.BATTLE]:addPlusAmmoText(criatura, ammo)
+			buffSounds[UPGRADE.LUCKY_TOTEM]:play()
 		end
 	end
 
@@ -97,7 +112,7 @@ function initFlashbang(quantity)
 	local func = function(criatura, alvo)
 		alvo.action = ACTION.MISS
 		alvo.blinded = true
-		-- TODO: som flashbang
+		buffSounds[ITEM.FLASHBANG]:play()
 	end
 
 	return ItemUpgrade.new(ITEM.FLASHBANG, desc, func, BUFF_TYPE.ITEM, qnt)
@@ -109,7 +124,7 @@ function initPotion(quantity)
 	local qnt = quantity or 3
 	local func = function(criatura)
 		cure(criatura)
-		-- TODO: som poção
+		buffSounds[ITEM.POTION]:play()
 	end
 
 	return ItemUpgrade.new(ITEM.POTION, desc, func, BUFF_TYPE.ITEM, qnt)
@@ -121,8 +136,8 @@ function initEnergyDrink(quantity)
 	local qnt = quantity or 1
 
 	local func = function(criatura)
-		criatura.dmgMult = criatura.dmgMult + 0.75
-		-- TODO: som energético
+		criatura.dmgMult = criatura.dmgMult + 0.5
+		buffSounds[ITEM.ENERGY_DRINK]:play()
 	end
 
 	return ItemUpgrade.new(ITEM.ENERGY_DRINK, desc, func, BUFF_TYPE.ITEM, qnt)

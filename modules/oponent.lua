@@ -27,6 +27,8 @@ function Oponent.new(name, maxHP, maxCounters, items, upgrades, strategyFunc)
 	oponent.ammo = 0
 	oponent.inventory = Inventory.new(items, upgrades)
 	oponent.action = ACTION.NONE
+	oponent.blinkDuration = 2
+	oponent.blinkTimer = 0
 	initCreatureAnimations(oponent)
 
 	-- ativa os upgrades para o oponente já surgir buffado
@@ -68,6 +70,7 @@ function Oponent:useItem(itemId)
 	if not item then
 		return
 	end
+
 	self:useBuff(item)
 end
 
@@ -88,6 +91,14 @@ function Oponent:draw(pos)
 		y = animation.frameDim.height / 2,
 	}
 	local scale = 0.75
+	local blinking = self.blinkTimer and self.blinkTimer > 0
+	if blinking then
+		local t = (self.blinkDuration or 2) - self.blinkTimer
+		local phase = math.floor(t * 10) % 2
+		if phase == 1 then
+			return
+		end
+	end
 	love.graphics.draw(self.spriteSheets[self.action], quad, pos[1], pos[2], 0, scale, scale, offset.x, offset.y)
 end
 
@@ -102,7 +113,7 @@ function generateOponentPool()
 	}
 
 	-- randomiza a ordem dos oponentes
-	for i = #pool - 2, 3, -1 do
+	for i = #pool - 1, 3, -1 do
 		local j = math.random(2, i)
 		pool[i], pool[j] = pool[j], pool[i]
 	end

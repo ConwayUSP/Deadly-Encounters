@@ -1,10 +1,8 @@
-<!-- This file conforms to the Standard Readme Style -->
-
 # Deadly Encounter
 
-![Deadly Encounter Menu Screen](assets/UI/menu.png|200x150)
+![Deadly Encounter Menu Screen](assets/UI/menu/menu_wLogo_bg.png)
 
-[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+[![Made with LÖVE](https://img.shields.io/badge/Made%20with-L%C3%96VE%202D-ff69b4.svg?style=flat-square)](https://love2d.org/)
 
 This is game was made for the [LÖVE JAM 2026](https://itch.io/jam/love2d-jam-2026) by _Conway USP_. This is also our first Game Jam ;)
 
@@ -31,11 +29,26 @@ cd Deadly-Encounter
 love .
 ```
 
-## Usage
+## Assets & Credits
 
-!TODO
+All visual art assets (characters, environments, UI, icons, etc.) were created by the Deadly Encounter team specifically for this project.
 
- ## Authors 
+All audio assets (sound effects and music) were sourced from libraries with appropriate licenses and were edited/adapted to fit the game. Below is a detailed list of the sound effects used and their authors/licenses:
+
+- Victory and Defeat Soundbites by Quazy1 -- https://freesound.org/s/778560/ -- License: Attribution 4.0
+- Bell 03 OS by Sadiquecat -- https://freesound.org/s/791477/ -- License: Creative Commons 0
+- Select Sound by Tony_Cannoli -- https://freesound.org/s/801081/ -- License: Creative Commons 0
+- Select 2.wav by NIKOS34 -- https://freesound.org/s/656394/ -- License: Creative Commons 0
+- Buy or Sell Item 2 by Sabacky -- https://freesound.org/s/766070/ -- License: Attribution 4.0
+- Flash bang in war by TheHiddenVoice -- https://freesound.org/s/222063/ -- License: Attribution NonCommercial 3.0
+- Drinks can opening 1.wav by craigglenday -- https://freesound.org/s/517175/ -- License: Creative Commons 0
+- Liquid Drink .mp3 by SilverIllusionist -- https://freesound.org/s/411172/ -- License: Attribution 4.0
+- PotionDrinkLONG.wav by Jamius -- https://freesound.org/s/41529/ -- License: Attribution 4.0
+- Scrap metal dropping / crashing by SamsterBirdies -- https://freesound.org/s/587443/ -- License: Creative Commons 0
+- menu.wav by wi-photos -- https://freesound.org/s/480932/ -- License: Creative Commons 0
+- Man vomit or get hurt by Piement_infernal -- https://freesound.org/s/772689/ -- License: Creative Commons 0
+
+## Authors 
 - Aika
 - Caique Costa ([@ccostafrias](https://github.com/ccostafria)) 
 - Caio Bernardo ([@caio-bernardo](https://github.com/caio-bernardo))
@@ -44,7 +57,7 @@ love .
 
 ## Acknowledgement
 
-All assets (including textures and sounds) were made by our team. The idea of the project was adapted from a previous project made in C. We assume all authorship over the source code of this project.
+All visual art assets were made by our team. Audio assets were created by external authors and are used under the licenses listed in the "Assets & Credits" section above. The idea of the project was adapted from a previous project made in C. We assume all authorship over the source code of this project.
 
 ## License
 
