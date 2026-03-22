@@ -29,7 +29,7 @@ DescriptionCard.__index = DescriptionCard
 
 function DescriptionCard.new(item, pos)
 	local card = setmetatable({}, DescriptionCard)
-	local x, y = pos.x, pos.y
+	local x, y = pos.x, pos.y - 30
 
 	local function updateFunc(text, _, descCard)
 		local color = text.color or { 0, 0, 0, 1 }
@@ -55,7 +55,7 @@ function DescriptionCard.new(item, pos)
 	card.scale = 0.55
 	card.bg = love.graphics.newImage("assets/UI/shop/description_" .. item.type .. ".png")
 
-	card.position = { x = pos.x - 20 or 0, y = pos.y - 60 or 0 }
+	card.position = { x = x - 20 or 0, y = y - 60 or 0 }
 	card.alpha = 0
 	card.fadeDuration = 0.2
 	return card
@@ -311,17 +311,19 @@ function ShopState:load()
 	end
 
 	local padding = 30
-	local xOffset = 150
 	self.texts.warning = Text.new(
 		"Press space to buy",
-		24,
+		48,
 		{ 1, 1, 1, 1 },
-		{ screenW - xOffset, screenH - padding },
+		{ screenW - 150, screenH - padding },
 		nil,
 		true,
 		math.huge,
 		blinkUpdate
 	)
+	local textWidth, textHeight = self.texts.warning:getDimensions()
+	self.texts.warning.pos[1] = screenW - textWidth/2 - padding
+	self.texts.warning.pos[2] = screenH - padding - textHeight/2
 
 	DESCRIPTIONS_TOTAL_WIDTH = DESCRIPTION_WIDTH * ITEMS_FOR_SALE + DESCRIPTION_GAP * (ITEMS_FOR_SALE - 1)
 	DESCRIPTION_START_X = (screenW - DESCRIPTIONS_TOTAL_WIDTH) / 2
