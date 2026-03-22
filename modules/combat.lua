@@ -198,7 +198,7 @@ function causeDamage(target, dmg, attacker)
 
 	dmg = dmg * attacker.dmgMult
 
-	if target.hp - dmg < 0 then
+	if target.hp - dmg <= 0 then
 		local defibrillator = target:hasUpgrade(UPGRADE.DEFIBRILLATOR)
 		if defibrillator then
 			defibrillator:activate(target)
@@ -219,6 +219,5 @@ function causeDamage(target, dmg, attacker)
 		end
 	else
 		target.hp = target.hp - dmg
-		-- TODO: som de dano
 	end
 end

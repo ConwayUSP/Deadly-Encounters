@@ -40,6 +40,7 @@ end
 
 function Player:resetForBattle()
 	self.hp = self.maxHp
+	self.maxCounters = 3
 	self.counters = self.maxCounters
 	self.ammo = 0
 	self.defCount = 0
