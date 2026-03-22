@@ -9,8 +9,8 @@ require("modules.combat")
 ----------------------------------------
 
 local buffSounds = {
-	-- [UPGRADE.PARRY] = love.audio.newSource("sounds/parry.mp3", "static"),
 	-- [UPGRADE.STOPWATCH] = love.audio.newSource("sounds/stopwatch.mp3", "static"),
+	[UPGRADE.PARRY] = love.audio.newSource("sounds/parry.mp3", "static"),
 	[UPGRADE.LUCKY_TOTEM] = love.audio.newSource("sounds/lucky_totem.mp3", "static"),
 	[UPGRADE.DEFIBRILLATOR] = love.audio.newSource("sounds/defibrillator.mp3", "static"),
 	[ITEM.FLASHBANG] = love.audio.newSource("sounds/flashbang.mp3", "static"),
@@ -26,6 +26,7 @@ function initParry()
 	local func = function(criatura, ammo)
 		criatura.ammo = criatura.ammo + ammo
 		GAMESTATE[CTX.BATTLE]:addPlusAmmoText(criatura, ammo)
+		buffSounds[UPGRADE.PARRY]:play()
 	end
 
 	return ItemUpgrade.new(UPGRADE.PARRY, desc, func, BUFF_TYPE.UPGRADE)

@@ -251,6 +251,10 @@ function HealthBar.new(creature, pos, who)
 	healthBar.scale = 0.72
 	healthBar.targetRatio = 1
 	healthBar.currentRatio = 1
+	healthBar.isShieldBreaking = false
+	healthBar.shieldBreakTimer = 0
+	healthBar.shieldBreakDuration = 0.6
+	healthBar.shieldPieces = nil
 
 	healthBar.empty = love.graphics.newImage("assets/UI/combat/empty_healthbar.png")
 	healthBar.full = love.graphics.newImage("assets/UI/combat/" .. who .. "_healthbar.png")
@@ -265,6 +269,55 @@ function HealthBar:update(dt)
 
 	local speed = 6
 	self.currentRatio = self.currentRatio + (self.targetRatio - self.currentRatio) * (1 - math.exp(-speed * dt))
+
+	if self.isShieldBreaking and self.shieldBreakTimer > 0 then
+		self.shieldBreakTimer = self.shieldBreakTimer - dt
+		if self.shieldPieces then
+			for _, piece in ipairs(self.shieldPieces) do
+				piece.vy = piece.vy + (piece.gravity or 0) * dt
+				piece.offsetX = piece.offsetX + piece.vx * dt
+				piece.offsetY = piece.offsetY + piece.vy * dt
+			end
+		end
+		if self.shieldBreakTimer <= 0 then
+			self.isShieldBreaking = false
+			self.shieldPieces = nil
+		end
+	end
+end
+
+function HealthBar:triggerShieldBreak()
+	local emptyW = self.empty:getWidth() * self.scale
+	local shieldW = self.shielded:getWidth() * self.scale
+	local shieldH = self.shielded:getHeight() * self.scale
+	local baseX = self.pos[1] - emptyW / 2
+	local baseY = self.pos[2]
+
+	local cols = 12
+	local rows = 2
+	local pieceW = shieldW / cols
+	local pieceH = shieldH / rows
+
+	self.isShieldBreaking = true
+	self.shieldBreakTimer = self.shieldBreakDuration
+	self.shieldPieces = {}
+
+	for row = 0, rows - 1 do
+		for col = 0, cols - 1 do
+			local piece = {}
+			piece.x = baseX + col * pieceW
+			piece.y = baseY + row * pieceH
+			piece.w = pieceW
+			piece.h = pieceH
+			piece.offsetX = 0
+			piece.offsetY = 0
+			local dir = (col - (cols - 1) / 2) / cols
+			piece.vx = (50 + math.random() * 80) * dir
+			piece.vy = - (50 + math.random() * 70)
+			piece.gravity = 220 + math.random() * 80
+			table.insert(self.shieldPieces, piece)
+		end
+	end
 end
 
 function HealthBar:draw()
@@ -275,11 +328,8 @@ function HealthBar:draw()
 	-- background
 	love.graphics.draw(self.empty, self.pos[1] - emptyW / 2, self.pos[2], 0, self.scale, self.scale)
 
-	if self.creature.shielded then
-		-- shield
-		love.graphics.draw(self.shielded, self.pos[1] - emptyW / 2, self.pos[2], 0, self.scale, self.scale)
-	else
-		-- foreground (vida)
+	-- foreground (vida)
+	if not self.creature.shielded then
 		local barWidth = emptyW * self.currentRatio
 		local offset = 0
 
@@ -291,6 +341,33 @@ function HealthBar:draw()
 		)
 		love.graphics.draw(self.full, self.pos[1] - emptyW / 2, self.pos[2], 0, self.scale, self.scale)
 		love.graphics.setScissor()
+	end
+
+	-- shield intact
+	if self.creature.shielded then
+		love.graphics.draw(self.shielded, self.pos[1] - emptyW / 2, self.pos[2], 0, self.scale, self.scale)
+	elseif self.isShieldBreaking and self.shieldBreakTimer > 0 and self.shieldPieces then
+		-- shield breaking into pieces
+		local shieldW = self.shielded:getWidth() * self.scale
+		local shieldH = self.shielded:getHeight() * self.scale
+		local baseX = self.pos[1] - emptyW / 2
+		local baseY = self.pos[2]
+		local alpha = math.max(0, math.min(1, self.shieldBreakTimer / self.shieldBreakDuration))
+
+		local r, g, b, a = love.graphics.getColor()
+		love.graphics.setColor(1, 1, 1, alpha)
+
+		for _, piece in ipairs(self.shieldPieces) do
+			love.graphics.setScissor(
+				piece.x + piece.offsetX,
+				piece.y + piece.offsetY,
+				piece.w,
+				piece.h
+			)
+			love.graphics.draw(self.shielded, baseX + piece.offsetX, baseY + piece.offsetY, 0, self.scale, self.scale)
+		end
+		love.graphics.setScissor()
+		love.graphics.setColor(r, g, b, a)
 	end
 
 	-- reset de cor
@@ -629,6 +706,23 @@ function BattleState:addPlusAmmoText(criatura, amount)
 	table.insert(self.plusAmmoTexts, plus)
 end
 
+function BattleState:onShieldBroken(criatura)
+	if not self.healthBar then
+		return
+	end
+
+	local bar = nil
+	if criatura == Player then
+		bar = self.healthBar.player
+	elseif criatura == self.oponent then
+		bar = self.healthBar.oponent
+	end
+
+	if bar then
+		bar:triggerShieldBreak()
+	end
+end
+
 function BattleState:endBattle()
 	if self.finalResult == Combat.WIN and BattleState.battleNum == 6 then
 		SetGameCtx(CTX.VICTORY_SCREEN)
@@ -740,7 +834,7 @@ function BattleState:update(dt)
 		-- count chegou a 3.5 -> volta ao idle e limpa os textos
 		if pt > 3.5 and self.timer < 3.5 and self.turn > 1 then
 			self:setAction(0)
-			self.oponent.action = ACTION.MISS
+			self.oponent.action = ACTION.NONE
 			self.actionsEnabled = true
 		end
 

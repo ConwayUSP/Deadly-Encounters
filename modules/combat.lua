@@ -6,6 +6,13 @@ Combat = {}
 Combat.WIN = "vitoria"
 Combat.LOSS = "derrota"
 Combat.ONGOING = "inacabado"
+Combat.sounds = {
+	SHIELD_BREAK = love.audio.newSource("sounds/shield_breaking.mp3", "static"),
+	-- COUNTER = love.audio.newSource("sounds/counter.mp3", "static"),
+	-- ATTACK = love.audio.newSource("sounds/attack.mp3", "static"),
+	-- HEAVY_ATTACK = love.audio.newSource("sounds/heavy_attack.mp3", "static"),
+	-- RELOAD = love.audio.newSource("sounds/reload.mp3", "static")
+}
 
 ----------------------------------------
 -- Funções de combate
@@ -26,9 +33,9 @@ function simulateTurn(player, oponent, hist)
 		player.action = ACTION.MISS
 	end
 
-	-- acao oponent invalida == VACILO
+	-- acao oponent invalida == RECARGA
 	if invalidOponentAction then
-		oponent.action = ACTION.MISS
+		oponent.action = ACTION.RECHARGE
 	end
 
 	applyAction(player, oponent)
@@ -179,7 +186,8 @@ end
 function causeDamage(target, dmg, attacker)
 	if target.shielded then
 		target.shielded = false
-		-- TODO: som escudo quebrado
+		GAMESTATE[CTX.BATTLE]:onShieldBroken(target)
+		Combat.sounds.SHIELD_BREAK:play()
 
 		return
 	end
