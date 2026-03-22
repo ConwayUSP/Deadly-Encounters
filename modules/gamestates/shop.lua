@@ -235,6 +235,7 @@ ShopState.__index = ShopState
 
 -- todos os itens disponíves à venda
 ShopState.allItems = {
+	initParry(),
 	initShield(),
 	initDefibrillator(),
 	initReverseCard(),
@@ -354,7 +355,8 @@ end
 function ShopState:randomizeItems()
 	local pickedIndexes = {}
 	local pickedCount = 0
-	while pickedCount < ITEMS_FOR_SALE do
+	local maxForSale = math.min(ITEMS_FOR_SALE, #self.allItems)
+	while pickedCount < maxForSale do
 		local index = math.random(1, #self.allItems)
 		if not pickedIndexes[index] then
 			pickedIndexes[index] = true
@@ -382,6 +384,15 @@ end
 -- faz o player comprar um item, adicionando ele ao inventário e removendo da loja
 function ShopState:buyItem(item, idx)
 	Player:getBuff(item)
+
+	-- remove da lista global
+	for i, baseItem in ipairs(self.allItems) do
+		if baseItem == item then
+			table.remove(self.allItems, i)
+			break
+		end
+	end
+
 	table.remove(self.itemsForSale, idx)
 	table.remove(self.descriptionCards, idx)
 
