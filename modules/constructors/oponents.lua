@@ -205,7 +205,7 @@ function initSebastiao()
 	end
 
 	-- sebastian, he can parry and drink energetic to give a boost
-	return Oponent.new("Sebastiao", 200, 3, {initParry()}, {initEnergyDrink(3)}, sebastiaoStrategy)
+	return Oponent.new("Sebastiao", 200, 3, {initEnergyDrink(3)}, {initParry()}, sebastiaoStrategy)
 end
 
 -- Aberração

@@ -441,7 +441,7 @@ function BattleState:resetUI()
 
 	local textOponentWidth = self.texts.oponentName:getDimensions()
 	local oponentUpgradesOwned =
-		UpgradesOwned.new(self.oponent.inventory.upgrades, { xOffset - textOponentWidth - 20, yOffset }, -1)
+		UpgradesOwned.new(self.oponent.inventory.upgrades, { xOffset - textOponentWidth - 50, yOffset }, -1)
 	self.texts.oponentName.pos[1] = self.texts.oponentName.pos[1] - textOponentWidth
 
 	-- upgrades owned
@@ -529,6 +529,7 @@ function BattleState:load()
 	self.sprites.three = love.graphics.newImage("assets/UI/combat/3.png")
 	self.sprites.shoot = love.graphics.newImage("assets/UI/combat/shoot.png")
 
+	self.sprites.amount = love.graphics.newImage("assets/UI/combat/amount.png")
 	-- sounds
 	self.sounds.select = love.audio.newSource("sounds/select.wav", "static")
 	self.sounds.counter3 = love.audio.newSource("sounds/counter_3.mp3", "static")
@@ -585,22 +586,27 @@ function BattleState:update(dt)
 			healthBar:update(dt)
 		end
 
-		-- Disable buttons if player cannot perform action/Enable them if they can
-		if Player.ammo < 2 then
-			self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:disable()
-		else
-			self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:enable()
-		end
-		if Player.defCount >= 2 then
-			self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:disable()
-		else
-			self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:enable()
-		end
-		if Player.counters == 0 then
-			self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:disable()
-		else
-			self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:enable()
-		end
+    -- Disable buttons if player cannot perform action/Enable them if they can
+	if Player.ammo == 0 then
+		self.actionSlots[getIdFromValue(ACTION.ATK, ACTION_IDX)]:disable()
+	else
+		self.actionSlots[getIdFromValue(ACTION.ATK, ACTION_IDX)]:enable()
+	end
+	if Player.ammo < 2 then
+		self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:disable()
+	else
+		self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:enable()
+	end
+	if Player.defCount >= 2 then
+		self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:disable()
+	else
+		self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:enable()
+	end
+	if Player.counters == 0 then
+        self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:disable()
+    else
+        self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:enable()
+    end
 
 		for _, slot in pairs(self.actionSlots) do
 			slot:update(dt)
@@ -665,6 +671,12 @@ function BattleState:draw()
 		slot:draw()
 	end
 
+	-- ammo amount
+    local amountX = screenW / 5 + 10
+	local amountY = screenH - self.sprites.amount:getHeight() - 60
+    love.graphics.draw(self.sprites.amount, amountX, amountY, 0, 1, 1)
+
+    love.graphics.print(tostring(Player.ammo).."x", amountX + 60, amountY + 20)
 	-- item slots
 	self.itemSlots:draw()
 
