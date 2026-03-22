@@ -102,7 +102,7 @@ function generateOponentPool()
 	}
 
 	-- randomiza a ordem dos oponentes
-	for i = #pool - 1, 2, -1 do
+	for i = #pool - 2, 3, -1 do
 		local j = math.random(2, i)
 		pool[i], pool[j] = pool[j], pool[i]
 	end

@@ -108,6 +108,7 @@ function ActionSlot.new(action, index, scale, screenW)
 	slot.screen = screenW
 
 	slot.active = false
+	slot.disabled = false
 	slot.isMoving = false
 	slot.gap = 15
 
@@ -152,6 +153,14 @@ function ActionSlot:getPosEnd()
 	return self.pos[1] + (self.socket:getWidth() * self.scale) / 2 + self.gap
 end
 
+function ActionSlot:disable()
+	self.disabled = true
+end
+
+function ActionSlot:enable()
+	self.disabled = false
+end
+
 function ActionSlot:update(dt)
 	if self.isMoving then
 		local dx = self.targetPos[1] - self.pos[1]
@@ -171,7 +180,9 @@ end
 function ActionSlot:draw()
 	love.graphics.setColor(1, 1, 1, 1)
 
-	if self.active then
+	if self.disabled then
+		love.graphics.setShader(darknessShader)
+	elseif self.active then
 		love.graphics.setShader(brightnessShader)
 	end
 
@@ -191,9 +202,12 @@ function ActionSlot:draw()
 		self.scale
 	)
 
-	if self.active then
+	if self.disabled then
+		love.graphics.setShader()
+	elseif self.active then
 		love.graphics.setShader()
 	end
+
 end
 
 ----------------------------------------
@@ -552,6 +566,23 @@ function BattleState:update(dt)
 		healthBar:update(dt)
 	end
 
+	-- Disable buttons if player cannot perform action/Enable them if they can
+	if Player.ammo < 2 then
+		self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:disable()
+	else
+		self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:enable()
+	end
+	if Player.defCount >= 2 then
+		self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:disable()
+	else
+		self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:enable()
+	end
+	if Player.counters == 0 then
+        self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:disable()
+    else
+        self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:enable()
+    end
+
 	for _, slot in pairs(self.actionSlots) do
 		slot:update(dt)
 	end
@@ -626,8 +657,11 @@ end
 -- Detecta o input do usuário
 function BattleState:keypressed(key, scancode, isrepeat)
 	local num = tonumber(key)
-	if num and num > 0 and num < 6 then
-		self:setAction(num)
+    if num and num > 0 and num < 6 then
+    	-- ignore if slot is disabled
+		if not self.actionSlots[num].disabled then
+			self:setAction(num)
+		end
 	end
 
 	if num and num >= 6 and num <= 8 then

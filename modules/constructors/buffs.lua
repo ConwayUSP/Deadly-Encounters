@@ -117,7 +117,7 @@ end
 function initEnergyDrink(quantity)
 	--local desc = "Deixa o próximo ataque mais forte"
 	local desc = "Buffs your next attack"
-	local qnt = qnt or 1
+	local qnt = quantity or 1
 
 	local func = function(criatura)
 		criatura.dmgMult = criatura.dmgMult + 0.75
