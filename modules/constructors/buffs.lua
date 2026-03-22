@@ -38,6 +38,7 @@ function initDefibrillator()
 	local func = function(criatura)
 		criatura.hp = 20
 		criatura.defibrilated = true
+		criatura.inventory:removeUpgrade(UPGRADE.DEFIBRILLATOR)
 		-- TODO: som revivido
 	end
 

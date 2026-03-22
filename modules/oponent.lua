@@ -68,6 +68,7 @@ function Oponent:useItem(itemId)
 	if not item then
 		return
 	end
+
 	self:useBuff(item)
 end
 

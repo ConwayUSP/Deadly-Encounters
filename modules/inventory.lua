@@ -69,6 +69,15 @@ function Inventory:addToUsed(buff)
 	table.insert(self.usedQueue, buff)
 end
 
+function Inventory:removeUpgrade(upgradeId)
+	for k, v in pairs(self.upgrades) do
+		if v.id == upgradeId then
+			self.upgrades[k] = nil
+			break
+		end
+	end
+end
+
 function Inventory:discardBuff(buff)
 	-- remove uma instância daquele buff do usedQueue
 	for k, v in pairs(self.usedQueue) do

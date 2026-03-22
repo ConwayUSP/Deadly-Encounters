@@ -466,6 +466,8 @@ BattleState.endTimer = math.huge
 BattleState.finalResult = nil
 BattleState.actionsEnabled = true
 BattleState.font = returnFont(32)
+BattleState.flashDuration = 0.25
+BattleState.flashTimer = 0
 
 -- para caso o jogo recomece
 function BattleState:restartGame()
@@ -487,6 +489,7 @@ function BattleState:reset()
 	self.endTimer = math.huge
 	self.finalResult = nil
 	self.actionsEnabled = true
+	self.flashTimer = 0
 	self:resetUI()
 end
 
@@ -521,15 +524,20 @@ function BattleState:resetUI()
 	self.texts.playerName = Text.new(string.upper(Player.name), 32, { 0, 0, 0, 1 }, { xOffset, yOffset })
 
 	local textPlayerWidth = self.texts.playerName:getDimensions()
-	local playerUpgradesOwned =
-		UpgradesOwned.new(Player.inventory.upgrades, { xOffset + textPlayerWidth + 20, yOffset }, 1)
+	local playerUpgradesOwned = UpgradesOwned.new(Player.inventory.upgrades, { xOffset + textPlayerWidth + 20, yOffset }, 1)
 
 	xOffset = centerSecondPart + self.healthBar.oponent.empty:getWidth() * self.healthBar.oponent.scale / 2
 	self.texts.oponentName = Text.new(string.upper(self.oponent.name), 32, { 0, 0, 0, 1 }, { xOffset, yOffset })
 
 	local textOponentWidth = self.texts.oponentName:getDimensions()
-	local oponentUpgradesOwned =
-		UpgradesOwned.new(self.oponent.inventory.upgrades, { xOffset - textOponentWidth - 50, yOffset }, -1)
+	local oponentBuffs = {}
+	for _, v in ipairs(self.oponent.inventory.upgrades) do
+		table.insert(oponentBuffs, v)
+	end
+	for _, v in ipairs(self.oponent.inventory.items) do
+		table.insert(oponentBuffs, v)
+	end
+	local oponentUpgradesOwned = UpgradesOwned.new(oponentBuffs, { xOffset - textOponentWidth - 60, yOffset }, -1)
 	self.texts.oponentName.pos[1] = self.texts.oponentName.pos[1] - textOponentWidth
 
 	-- upgrades owned
@@ -709,9 +717,15 @@ function BattleState:update(dt)
 			self.sounds.counterShoot:play()
 			self.turn = self.turn + 1
 			self:simulateBattle()
+
+			local blindedAtShoot = Player.blinded or self.oponent.blinded
+			if blindedAtShoot then
+				self.flashTimer = self.flashDuration
+			end
+
 			self.timer = self.decisionTime
-			self:resetTurn()
 			self.actionsEnabled = false
+			self:resetTurn()
 		end
 
 		-- count chegou a 3.5 -> volta ao idle e limpa os textos
@@ -740,6 +754,10 @@ function BattleState:update(dt)
 		if self.endTimer <= 0 then
 			self:endBattle()
 		end
+	end
+
+	if self.flashTimer and self.flashTimer > 0 then
+		self.flashTimer = math.max(0, self.flashTimer - dt)
 	end
 	
 	self:verifyActionSlots()
@@ -850,6 +868,14 @@ function BattleState:draw()
 
 	-- counter
 	self.counter:draw()
+
+	-- clarão (flashbang)
+	if self.flashTimer and self.flashTimer > 0 then
+		local t = self.flashTimer / self.flashDuration
+		local alpha = math.max(0, math.min(1, t))
+		love.graphics.setColor(1, 1, 1, alpha)
+		love.graphics.rectangle("fill", 0, 0, screenW, screenH)
+	end
 
 	love.graphics.setColor(1, 1, 1, 1)
 end

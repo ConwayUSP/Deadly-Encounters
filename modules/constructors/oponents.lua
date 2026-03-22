@@ -8,12 +8,12 @@ require("modules.constructors.buffs")
 -- prevent invalid actions by returning to defaults
 local function solveInvalidAction(action, self)
 	if action == ACTION.ATK and self.ammo == 0 then
-            return ACTION.RECHARGE
+		return ACTION.RECHARGE
 	elseif action == ACTION.HEAVY_ATK and self.ammo < 2 then
 		return ACTION.RECHARGE
 	elseif action == ACTION.COUNTER and self.counters == 0 then
-        return ACTION.DEFENSE
-    else
+		return ACTION.DEFENSE
+	else
 		return action
 	end
 end
@@ -22,19 +22,19 @@ end
 -- Emo
 function initJoshua()
 	-- Joshua. He's an emo. Has the most basic decision
-    local joshuaStrategy = function(self, player, turn, hist)
-	    -- 1 = counter
-	    -- 2 = heavy atk
-	    -- 3 = recharge
-	    -- 4 = defense
-	    -- 5 = atk
-        local actions = {
-            { weight = 1, value = ACTION.COUNTER },
-            { weight = 1, value = ACTION.DEFENSE },
-            { weight = 2, value = ACTION.RECHARGE },
-            { weight = 3, value = ACTION.HEAVY_ATK }, -- focus on doing a heavy attack
-            { weight = 3, value = ACTION.ATK }, -- focus on attacks
-        }
+	local joshuaStrategy = function(self, player, turn, hist)
+		-- 1 = counter
+		-- 2 = heavy atk
+		-- 3 = recharge
+		-- 4 = defense
+		-- 5 = atk
+		local actions = {
+				{ weight = 1, value = ACTION.COUNTER },
+				{ weight = 1, value = ACTION.DEFENSE },
+				{ weight = 2, value = ACTION.RECHARGE },
+				{ weight = 3, value = ACTION.HEAVY_ATK }, -- focus on doing a heavy attack
+				{ weight = 3, value = ACTION.ATK }, -- focus on attacks
+		}
 		-- increase chance of recharging
 		if self.ammo == 0 then
 			actions[3].weight = 9
@@ -52,38 +52,38 @@ end
 function initDjabo()
 	-- Djabo is a cheater
 	-- Relies on counter and furiously attacking
-    local djaboStrategy = function(self, player, turn, hist)
-	    -- 1 = counter
-	    -- 2 = heavy atk
-	    -- 3 = recharge
-	    -- 4 = defense
-	    -- 5 = atk
-       local actions = {
-           { weight = 2, value = ACTION.COUNTER },
-           { weight = 1, value = ACTION.DEFENSE },
-           { weight = 3, value = ACTION.RECHARGE },
-           { weight = 3, value = ACTION.HEAVY_ATK },
-           { weight = 3, value = ACTION.ATK },
-       }
+	local djaboStrategy = function(self, player, turn, hist)
+		-- 1 = counter
+		-- 2 = heavy atk
+		-- 3 = recharge
+		-- 4 = defense
+		-- 5 = atk
+		local actions = {
+			{ weight = 2, value = ACTION.COUNTER },
+			{ weight = 1, value = ACTION.DEFENSE },
+			{ weight = 3, value = ACTION.RECHARGE },
+			{ weight = 3, value = ACTION.HEAVY_ATK },
+			{ weight = 3, value = ACTION.ATK },
+		}
 		-- increase chance of recharging if no charges
 		if self.ammo == 0 then
 			actions[3].weight = 9
 		end
 
-        -- player may use heavy attack
+		-- player may use heavy attack
 		-- so increase counter and try to use buff
-        if player.ammo >= 3 then
-            actions[1].weight = 3
-            if math.random() < 0.4 and self:hasItem(ITEM.FLASHBANG) then
-            	self:useItem(ITEM.FLASHBANG)
-            end
-        end
+		if player.ammo >= 3 then
+				actions[1].weight = 3
+				if math.random() < 0.4 and self:hasItem(ITEM.FLASHBANG) then
+					self:useItem(ITEM.FLASHBANG)
+				end
+		end
 
-        -- increase chance to attack if more ammo
-        if self.ammo >= 2 then
-        	actions[4].weight = 4
-         	actions[5].weight = 5
-        end
+		-- increase chance to attack if more ammo
+		if self.ammo >= 2 then
+			actions[4].weight = 4
+			actions[5].weight = 5
+		end
 
 		-- prevent invalid actions
 		local choice = weightedChoice(actions)
@@ -143,19 +143,19 @@ function initOZard()
 			{ weight = 4, value = ACTION.RECHARGE },
 			{ weight = 4, value = ACTION.DEFENSE },
 			{ weight = 2, value = ACTION.ATK }, -- focus on attacks
-        }
+		}
 
-        if self.hp < self.maxHp / 2 and self:hasItem(ITEM.POTION) and math.random() < 0.7 then
-            self:useItem(ITEM.POTION)
-        end
+		if self.hp < self.maxHp / 2 and self:hasItem(ITEM.POTION) and math.random() < 0.7 then
+				self:useItem(ITEM.POTION)
+		end
 
-		-- increase chance of recharging
-        if self.ammo == 0 then
-            actions[3].weight = 9
-        end
+-- increase chance of recharging
+		if self.ammo == 0 then
+				actions[3].weight = 9
+		end
 
 		if player.hp < player.maxHp / 2 then
-            actions[5].weight = 4
+			actions[5].weight = 4
 			actions[4].weight = 2
 		end
 
@@ -189,17 +189,17 @@ function initSebastiao()
 		end
 
 		-- prevent invalid actions
-        local choice = weightedChoice(actions)
+		local choice = weightedChoice(actions)
 
-        -- uses energy drinks on heavy attacks
-        if choice == ACTION.HEAVY_ATK and self:hasItem(ITEM.ENERGY_DRINK) and math.random() < 0.7 then
-            self:useItem(ITEM.ENERGY_DRINK)
-        end
+		-- uses energy drinks on heavy attacks
+		if choice == ACTION.HEAVY_ATK and self:hasItem(ITEM.ENERGY_DRINK) and math.random() < 0.7 then
+				self:useItem(ITEM.ENERGY_DRINK)
+		end
 
-        -- tries to use energy drinks more precautios
-        if choice == ACTION.ATK and self:hasItem(ITEM.ENERGY_DRINK) and math.random() < 0.3 then
-            self:useItem(ITEM.ENERGY_DRINK)
-        end
+		-- tries to use energy drinks more precautios
+		if choice == ACTION.ATK and self:hasItem(ITEM.ENERGY_DRINK) and math.random() < 0.3 then
+				self:useItem(ITEM.ENERGY_DRINK)
+		end
 
 		return solveInvalidAction(choice, self)
 	end
@@ -214,20 +214,20 @@ function initAberration()
     -- Works with probabilities, increase the probabilities according to the environment
 	-- Also has a strange power to affect the player senses
     local aberrationStrategy = function(self, player, turn, hist)
-	    -- 1 = counter
-	    -- 2 = heavy atk
-	    -- 3 = recharge
-	    -- 4 = defense
-	    -- 5 = atk
-        local actions = {
-            { weight = 2, value = ACTION.COUNTER },
-            { weight = 2, value = ACTION.HEAVY_ATK },
-            { weight = 2, value = ACTION.RECHARGE },
-            { weight = 2, value = ACTION.DEFENSE },
-            { weight = 2, value = ACTION.ATK },
-        }
+		-- 1 = counter
+		-- 2 = heavy atk
+		-- 3 = recharge
+		-- 4 = defense
+		-- 5 = atk
+		local actions = {
+			{ weight = 2, value = ACTION.COUNTER },
+			{ weight = 2, value = ACTION.HEAVY_ATK },
+			{ weight = 2, value = ACTION.RECHARGE },
+			{ weight = 2, value = ACTION.DEFENSE },
+			{ weight = 2, value = ACTION.ATK },
+		}
 
-        -- if with less than half of health
+		-- if with less than half of health
 		-- interfes with player action slots
 		if self.hp <= 200 / 2 and math.random() < 0.6 then
 			GAMESTATE[GameCtx]:shuffleActionSlots()

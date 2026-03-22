@@ -192,6 +192,7 @@ function causeDamage(target, dmg, attacker)
 			defibrillator:activate(target)
 		else
 			target.hp = 0
+			target.action = ACTION.DEAD
 		end
 	else
 		target.hp = target.hp - dmg
