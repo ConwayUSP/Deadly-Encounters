@@ -23,6 +23,7 @@ function ItemSlot.new(items, scale, pos)
 	slot.pos = pos
 
 	slot.socket = love.graphics.newImage("assets/UI/combat/consumables_socket.png")
+	slot.font = returnFont(24)
 
 	return slot
 end
@@ -34,6 +35,7 @@ function ItemSlot:draw()
 	local socketH = self.socket:getHeight() * self.scale
 
 	love.graphics.draw(self.socket, self.pos[1] - socketW / 2, self.pos[2] - socketH / 2, 0, self.scale, self.scale)
+	love.graphics.setFont(self.font)
 
 	local itemScale = 0.25
 	if self.items[3] then
@@ -42,7 +44,7 @@ function ItemSlot:draw()
 		if item.quantity > 0 then
 			local itemSprite = item.sprite
 			local itemW = itemSprite:getWidth() * itemScale
-            local itemH = itemSprite:getHeight() * itemScale
+			local itemH = itemSprite:getHeight() * itemScale
 			local posX = self.pos[1] + socketW / 4 - itemW / 2 - 8
 			local posY = self.pos[2] - itemH / 2
 			love.graphics.draw(
@@ -63,12 +65,12 @@ function ItemSlot:draw()
 		if item.quantity > 0 then
 			local itemSprite = item.sprite
 			local itemW = itemSprite:getWidth() * itemScale
-            local itemH = itemSprite:getHeight() * itemScale
-            local posX = self.pos[1] - socketW / 4 - itemW / 2 + 4
-            local posY = self.pos[2] - itemH / 2 - socketH / 4 + 8
+			local itemH = itemSprite:getHeight() * itemScale
+			local posX = self.pos[1] - socketW / 4 - itemW / 2 + 4
+			local posY = self.pos[2] - itemH / 2 - socketH / 4 + 8
 			love.graphics.draw(
 				itemSprite,
-                posX,
+				posX,
 				posY,
 				0,
 				itemScale,
@@ -84,7 +86,7 @@ function ItemSlot:draw()
 		if item.quantity > 0 then
 			local itemSprite = item.sprite
 			local itemW = itemSprite:getWidth() * itemScale
-            local itemH = itemSprite:getHeight() * itemScale
+			local itemH = itemSprite:getHeight() * itemScale
 			local posX = self.pos[1] - socketW / 4 - itemW / 2 + 4
 			local posY = self.pos[2] - itemH / 2 + socketH / 4
 			love.graphics.draw(
@@ -99,7 +101,7 @@ function ItemSlot:draw()
 		end
 	end
 
-	-- reset de cor
+	-- reset
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
@@ -110,14 +112,17 @@ end
 ActionSlot = {}
 ActionSlot.__index = ActionSlot
 
-function ActionSlot.new(action, index, scale, screenW)
+function ActionSlot.new(action, index, scale, screenW, text)
 	local slot = setmetatable({}, ActionSlot)
 	slot.action = action
 	slot.originalIndex = index
 	slot.index = index
 	slot.scale = scale
 	slot.screen = screenW
-
+	slot.current = text and text.current or nil
+	slot.total = text and text.total or nil
+	slot.font = returnFont(16)
+	
 	slot.active = false
 	slot.disabled = false
 	slot.isMoving = false
@@ -188,6 +193,11 @@ function ActionSlot:update(dt)
 	end
 end
 
+function ActionSlot:updateText(text)
+	self.current = text and text.current or nil
+	self.total = text and text.total or nil
+end
+
 function ActionSlot:draw()
 	love.graphics.setColor(1, 1, 1, 1)
 
@@ -212,6 +222,13 @@ function ActionSlot:draw()
 		self.scale,
 		self.scale
 	)
+
+	love.graphics.setFont(self.font)
+	if self.current and self.total then
+		local padding = 18
+		local text = tostring(self.current) .. "/" .. tostring(self.total)
+		love.graphics.print(text, self.pos[1] - socketW / 2 + padding, self.pos[2] - socketH / 2 + padding)
+	end
 
 	if self.disabled then
 		love.graphics.setShader()
@@ -263,8 +280,7 @@ function HealthBar:draw()
 		love.graphics.draw(self.shielded, self.pos[1] - emptyW / 2, self.pos[2], 0, self.scale, self.scale)
 	else
 		-- foreground (vida)
-		local hpRatio = self.creature.hp / self.creature.maxHp
-		local barWidth = emptyW * hpRatio
+		local barWidth = emptyW * self.currentRatio
 		local offset = 0
 
 		love.graphics.setScissor(
@@ -470,6 +486,8 @@ function BattleState:resetUI()
 		self.actionSlots[i] = ActionSlot.new(ACTION_IDX[i], i, slotScale, screenW - itemSlotW)
 	end
 
+	self:verifyActionSlots()
+
 	self.itemSlots.pos[1] = self.actionSlots[5]:getPosEnd() + self.itemSlots.socket:getWidth() * itemScale / 2
 end
 
@@ -495,15 +513,23 @@ function BattleState:simulateBattle()
 	local turnResult = simulateTurn(Player, self.oponent, self.hist)
 	self.hist:addSnapshot(Player)
 
-
 	local width, height = love.graphics.getDimensions()
-    self.texts.playerAction = Text.new(toPrettyActionName(Player.action), 64, mapToColor(Player.action), {width / 3, height * 1/5}, 0, 0, 1.5, function (text, dt)
-	    text.scale = text.scale and (text.scale + math.sin(dt/10)) or 1
-    end)
-    local oponentAction = self.oponent.action
-    self.texts.oponentAction = Text.new(toPrettyActionName(oponentAction), 64, mapToColor(oponentAction), {width * 2/3 , height * 1/5}, 0, 0, 1.5, function (text, dt)
-	    text.scale = text.scale and (text.scale + math.sin(dt/10)) or 1
-    end)
+	self.texts.playerActionShadow = Text.new(toPrettyActionName(Player.action), 64, { 0, 0, 0, 1 }, {2.5 * width / 12 + 5, height * 0.27 + 5}, 0, 0, 1.5, function (text, dt)
+		text.scale = text.scale and (text.scale + math.sin(dt/10)) or 1
+	end)
+	self.texts.playerActionShadow.isShadow = true
+	self.texts.playerAction = Text.new(toPrettyActionName(Player.action), 64, mapToColor(Player.action), {2.5 * width / 12, height * 0.27}, 0, 0, 1.5, function (text, dt)
+		text.scale = text.scale and (text.scale + math.sin(dt/10)) or 1
+	end)
+
+	local oponentAction = self.oponent.action
+	self.texts.oponentActionShadow = Text.new(toPrettyActionName(oponentAction), 64, { 0, 0, 0, 1 }, {9.5 * width / 12 + 5, height * 0.27 + 5}, 0, 0, 1.5, function (text, dt)
+		text.scale = text.scale and (text.scale + math.sin(dt/10)) or 1
+	end)
+	self.texts.oponentActionShadow.isShadow = true
+	self.texts.oponentAction = Text.new(toPrettyActionName(oponentAction), 64, mapToColor(oponentAction), {9.5 * width / 12, height * 0.27}, 0, 0, 1.5, function (text, dt)
+		text.scale = text.scale and (text.scale + math.sin(dt/10)) or 1
+	end)
 
 	if turnResult ~= Combat.ONGOING then
 		self.finalResult = turnResult
@@ -527,25 +553,30 @@ function BattleState:endBattle()
 	end
 end
 
-function BattleState:newCounterText(txt)
-	local width, height = love.graphics.getDimensions()
-	return Text.new(txt, 64, { 0.15, 0.10, 0.08, 1 }, { width / 2, height * 2 / 5 }, 0, 0, 0.5, function(text, dt)
-		text.scale = text.scale and (text.scale + 2 * dt) or 1
-	end)
-end
-
 function BattleState:load()
 	self:reset()
 
 	-- sprites
-	local background = love.graphics.newImage("assets/UI/combat/combat_bg.png")
-	self.sprites.bg = background
+	self.sprites.bg = love.graphics.newImage("assets/UI/combat/combat_bg.png")
 	self.sprites.one = love.graphics.newImage("assets/UI/combat/1.png")
 	self.sprites.two = love.graphics.newImage("assets/UI/combat/2.png")
 	self.sprites.three = love.graphics.newImage("assets/UI/combat/3.png")
 	self.sprites.shoot = love.graphics.newImage("assets/UI/combat/shoot.png")
 
 	self.sprites.amount = love.graphics.newImage("assets/UI/combat/amount.png")
+
+	-- texto ammo
+	local battle = self
+	self.texts.ammo = Text.new("", 32, { 1, 1, 1, 1 }, { 0, 0 }, 0, nil, nil, function(text, dt)
+		local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
+		local amountX = screenW / 5 + 10
+		local amountY = screenH - battle.sprites.amount:getHeight() - 60
+
+		text.pos[1] = amountX + 60
+		text.pos[2] = amountY + 20
+		text.content = tostring(Player.ammo) .. "x"
+	end)
+	
 	-- sounds
 	self.sounds.select = love.audio.newSource("sounds/select.wav", "static")
 	self.sounds.counter3 = love.audio.newSource("sounds/counter_3.mp3", "static")
@@ -569,6 +600,37 @@ function BattleState:resetTurn()
 	self.oponent.blinded = false
 end
 
+function BattleState:verifyActionSlots()
+		-- Disable buttons if player cannot perform action/Enable them if they can
+	if Player.ammo == 0 then
+		self.actionSlots[getIdFromValue(ACTION.ATK, ACTION_IDX)]:disable()
+	else
+		self.actionSlots[getIdFromValue(ACTION.ATK, ACTION_IDX)]:enable()
+	end
+	if Player.ammo < 2 then
+		self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:disable()
+	else
+		self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:enable()
+	end
+	if Player.defCount >= 2 then
+		self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:disable()
+	else
+		self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:enable()
+	end
+	if Player.counters == 0 then
+		self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:disable()
+	else
+		self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:enable()
+	end
+end
+
+function BattleState:updateActionSlots()
+	self.actionSlots[getIdFromValue(ACTION.ATK, ACTION_IDX)]:updateText({ current = Player.ammo, total = 1 })
+	self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:updateText({ current = Player.ammo, total = 2 })
+	self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:updateText({ current = Player.counters, total = Player.maxCounters })
+	self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:updateText({ current = Player.defCount, total = 2 })
+end
+
 function BattleState:update(dt)
 	if not self.hasEnded then
 		local pt = self.timer
@@ -585,11 +647,10 @@ function BattleState:update(dt)
 			self.actionsEnabled = false
 		end
 
-		-- count chegou a 4 -> volta ao idle e limpa os textos
-		if pt > 4 and self.timer < 4 and self.turn > 1 then
+		-- count chegou a 3.5 -> volta ao idle e limpa os textos
+		if pt > 3.5 and self.timer < 3.5 and self.turn > 1 then
 			self:setAction(0)
 			self.oponent.action = ACTION.MISS
-			self.counter.isActive = false
 			self.actionsEnabled = true
 		end
 
@@ -607,40 +668,24 @@ function BattleState:update(dt)
 			self.sounds.counter1:play()
 		end
 
-		for _, healthBar in pairs(self.healthBar) do
-			healthBar:update(dt)
-		end
-
-		-- Disable buttons if player cannot perform action/Enable them if they can
-		if Player.ammo == 0 then
-			self.actionSlots[getIdFromValue(ACTION.ATK, ACTION_IDX)]:disable()
-		else
-			self.actionSlots[getIdFromValue(ACTION.ATK, ACTION_IDX)]:enable()
-		end
-		if Player.ammo < 2 then
-			self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:disable()
-		else
-			self.actionSlots[getIdFromValue(ACTION.HEAVY_ATK, ACTION_IDX)]:enable()
-		end
-		if Player.defCount >= 2 then
-			self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:disable()
-		else
-			self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:enable()
-		end
-		if Player.counters == 0 then
-			self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:disable()
-		else
-			self.actionSlots[getIdFromValue(ACTION.COUNTER, ACTION_IDX)]:enable()
-		end
-
-		for _, slot in pairs(self.actionSlots) do
-			slot:update(dt)
-		end
 	else
 		self.endTimer = self.endTimer - dt
 		if self.endTimer <= 0 then
 			self:endBattle()
 		end
+	end
+	
+	self:verifyActionSlots()
+	self:updateActionSlots()
+
+	for _, slot in pairs(self.actionSlots) do
+		slot:update(dt)
+	end
+
+	self.counter:update(dt)
+
+	for _, healthBar in pairs(self.healthBar) do
+		healthBar:update(dt)
 	end
 
 	-- texts
@@ -701,13 +746,19 @@ function BattleState:draw()
 	local amountY = screenH - self.sprites.amount:getHeight() - 60
 	love.graphics.draw(self.sprites.amount, amountX, amountY, 0, 1, 1)
 
-	love.graphics.print(tostring(Player.ammo) .. "x", amountX + 60, amountY + 20)
 	-- item slots
 	self.itemSlots:draw()
 
 	-- texts
 	for _, text in pairs(self.texts) do
-		text:draw()
+		if text.isShadow then
+			text:draw()
+		end
+	end
+	for _, text in pairs(self.texts) do
+		if not text.isShadow then
+			text:draw()
+		end
 	end
 
 	-- counter
@@ -763,7 +814,9 @@ function BattleState:setAction(num)
 		end
 	end
 
-	self.sounds.select:play()
+	if num ~= 0 then
+		self.sounds.select:play()
+	end
 end
 
 function BattleState:shuffleActionSlots()
