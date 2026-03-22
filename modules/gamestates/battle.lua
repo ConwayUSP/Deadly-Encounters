@@ -489,6 +489,16 @@ function BattleState:simulateBattle()
 	local turnResult = simulateTurn(Player, self.oponent, self.hist)
 	self.hist:addSnapshot(Player)
 
+
+	local width, height = love.graphics.getDimensions()
+    self.texts.playerAction = Text.new(toPrettyActionName(Player.action), 64, mapToColor(Player.action), {width / 3, height * 1/5}, 0, 0, 1.5, function (text, dt)
+	    text.scale = text.scale and (text.scale + math.sin(dt/10)) or 1
+    end)
+    local oponentAction = self.oponent.action
+    self.texts.oponentAction = Text.new(toPrettyActionName(oponentAction), 64, mapToColor(oponentAction), {width * 2/3 , height * 1/5}, 0, 0, 1.5, function (text, dt)
+	    text.scale = text.scale and (text.scale + math.sin(dt/10)) or 1
+    end)
+
 	if turnResult ~= Combat.ONGOING then
 		self.finalResult = turnResult
 		self.hasEnded = true
