@@ -54,8 +54,8 @@ function ItemSlot:draw()
 				0,
 				itemScale,
 				itemScale
-            )
-            love.graphics.print(tostring(item.quantity).."x", posX, posY, 0, 0.5)
+			)
+			love.graphics.print(tostring(item.quantity).."x", posX, posY, 0, 0.5)
 		end
 	end
 
@@ -320,8 +320,8 @@ function UpgradesOwned:draw()
 	local spacing = 0
 	local size = self.upgrades[1] and self.upgrades[1].sprite:getWidth() * self.scale or 0
 	for i, upgrade in ipairs(self.upgrades) do
-		x = x + self.direction * (size + spacing) * (i - 1)
 		love.graphics.draw(upgrade.sprite, x, y, 0, self.scale, self.scale)
+		x = x + self.direction * (size + spacing)
 	end
 end
 
@@ -718,6 +718,15 @@ function BattleState:update(dt)
 			self.turn = self.turn + 1
 			self:simulateBattle()
 
+			-- defibrillator effect
+			if Player.defibrilated then
+				Player.blinkTimer = Player.blinkDuration or 1.2
+			end
+			if self.oponent.defibrilated then
+				self.oponent.blinkTimer = self.oponent.blinkDuration or 1.2
+			end
+
+			-- flashbang effect
 			local blindedAtShoot = Player.blinded or self.oponent.blinded
 			if blindedAtShoot then
 				self.flashTimer = self.flashDuration
@@ -780,6 +789,14 @@ function BattleState:update(dt)
 
 	for _, healthBar in pairs(self.healthBar) do
 		healthBar:update(dt)
+	end
+
+	-- timers de piscar das criaturas (desfibrilador)
+	if Player.blinkTimer and Player.blinkTimer > 0 then
+		Player.blinkTimer = math.max(0, Player.blinkTimer - dt)
+	end
+	if self.oponent.blinkTimer and self.oponent.blinkTimer > 0 then
+		self.oponent.blinkTimer = math.max(0, self.oponent.blinkTimer - dt)
 	end
 
 	-- texts
