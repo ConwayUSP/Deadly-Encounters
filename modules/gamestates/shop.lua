@@ -291,7 +291,7 @@ function ShopState:load()
 	self.sounds.buy = love.audio.newSource("sounds/buy_00.wav", "static")
 	self.sounds.select = love.audio.newSource("sounds/select.wav", "static")
 	self.sounds.bell = love.audio.newSource("sounds/shop_bell.wav", "static")
-	self.sounds.bg = love.audio.newSource("sounds/shop_bg.mp3", "stream")
+	self.sounds.bg = love.audio.newSource("sounds/shop_bg.mp3", "static")
 
 	self.sounds.buy:setVolume(0.35)
 	self.sounds.bell:setVolume(0.8)

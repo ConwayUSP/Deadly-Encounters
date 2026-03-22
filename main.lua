@@ -31,8 +31,6 @@ function SetGameCtx(newCtx)
 end
 
 function love.load()
-	love.window.setFullscreen(true)
-
 	-- carrega o estado inicial manualmente para usar uma transição
 	GAMESTATE[GameCtx]:load()
 end

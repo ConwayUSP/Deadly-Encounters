@@ -52,15 +52,17 @@ function MenuState:load()
 	self.sounds.start = love.audio.newSource("sounds/start.mp3", "static")
 	self.sounds.start:setVolume(0.5)
 
+	self.sounds.bg = love.audio.newSource("sounds/menu_bg.wav", "static")
+	self.sounds.bg:setLooping(true)
+	self.sounds.bg:setVolume(0.25)
+
 	if self.isFirstRender then
 		self.sounds.deadly_encounter = love.audio.newSource("sounds/deadly_encounter.mp3", "static")
 		self.sounds.deadly_encounter:play()
 		self.isFirstRender = false
+	else
+		self.sounds.bg:play()
 	end
-
-	self.sounds.bg = love.audio.newSource("sounds/menu_bg.wav", "stream")
-	self.sounds.bg:setLooping(true)
-	self.sounds.bg:setVolume(0.25)
 end
 
 function MenuState:update(dt)

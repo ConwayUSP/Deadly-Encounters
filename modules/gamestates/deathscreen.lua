@@ -20,7 +20,7 @@ function DeathState:load()
 	self.sprites.bg = love.graphics.newImage("assets/UI/death/death_bg.png")
 
 	-- sounds
-	self.sounds.bg = love.audio.newSource("sounds/death_music.mp3", "stream")
+	self.sounds.bg = love.audio.newSource("sounds/death_music.mp3", "static")
 	self.sounds.bg:setLooping(true)
 	self.sounds.merreu = love.audio.newSource("sounds/merreu.mp3", "static")
 	self.sounds.merreu:play()

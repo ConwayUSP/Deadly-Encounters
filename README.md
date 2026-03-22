@@ -29,6 +29,40 @@ cd Deadly-Encounter
 love .
 ```
 
+## Web version (Docker)
+
+You can build and run the web version of the game using Docker and love.js.
+
+### Pre-requisites
+
+- Docker installed and running
+
+### Commands (run in the project root)
+
+1. Build the image (this compiles the LÖVE project to WebAssembly using love.js):
+
+```sh
+docker build -t game-image .
+```
+
+2. Run the container exposing the web server on port 3000:
+
+```sh
+docker run --publish 3000:80 --detach --name game game-image
+```
+
+3. Open the game in your browser:
+
+- http://localhost:3000
+
+4. (Opcional) Para recriar a imagem depois de mudanças no código, pare e remova o container e então rode o build novamente:
+
+```sh
+docker rm -f game
+docker build -t game-image .
+docker run --publish 3000:80 --detach --name game game-image
+```
+
 ## Assets & Credits
 
 All visual art assets (characters, environments, UI, icons, etc.) were created by the Deadly Encounter team specifically for this project.

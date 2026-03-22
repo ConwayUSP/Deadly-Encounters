@@ -68,19 +68,21 @@ function newAnimation(path, settings)
 	local qWidth = settings.quadSize.width
 	local qHeight = settings.quadSize.height
 	local i = 0
+	local done = false
 
 	for y = 0, sHeight - qHeight, qHeight + gap do
 		for x = 0, sWidth - qWidth, qWidth + gap do
 			i = i + 1
 			if i > settings.numFrames then
-				goto createanimation
+				done = true
+				break
 			end
 
 			table.insert(frames, love.graphics.newQuad(x, y, qWidth, qHeight, sWidth, sHeight))
 		end
+		if done then break end
 	end
 
-	::createanimation::
 	return Animation.new(frames, settings.frameDur, settings.looping, settings.loopFrame, settings.quadSize)
 end
 

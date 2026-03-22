@@ -20,7 +20,7 @@ function VictoryState:load()
 	self.sprites.bg = love.graphics.newImage("assets/UI/victory/victory_bg.png")
 
 	-- sounds
-	self.sounds.bg = love.audio.newSource("sounds/victory_bg.mp3", "stream")
+	self.sounds.bg = love.audio.newSource("sounds/victory_bg.mp3", "static")
 	self.sounds.bg:setLooping(true)
 	self.sounds.vitoria = love.audio.newSource("sounds/victory_crowd.mp3", "static")
 	self.sounds.vitoria:play()
