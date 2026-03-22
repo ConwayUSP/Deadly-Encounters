@@ -42,15 +42,18 @@ function ItemSlot:draw()
 		if item.quantity > 0 then
 			local itemSprite = item.sprite
 			local itemW = itemSprite:getWidth() * itemScale
-			local itemH = itemSprite:getHeight() * itemScale
+            local itemH = itemSprite:getHeight() * itemScale
+			local posX = self.pos[1] + socketW / 4 - itemW / 2 - 8
+			local posY = self.pos[2] - itemH / 2
 			love.graphics.draw(
 				itemSprite,
-				self.pos[1] + socketW / 4 - itemW / 2 - 8,
-				self.pos[2] - itemH / 2,
+				posX,
+				posY,
 				0,
 				itemScale,
 				itemScale
-			)
+            )
+            love.graphics.print(tostring(item.quantity).."x", posX, posY, 0, 0.5)
 		end
 	end
 
@@ -60,15 +63,18 @@ function ItemSlot:draw()
 		if item.quantity > 0 then
 			local itemSprite = item.sprite
 			local itemW = itemSprite:getWidth() * itemScale
-			local itemH = itemSprite:getHeight() * itemScale
+            local itemH = itemSprite:getHeight() * itemScale
+            local posX = self.pos[1] - socketW / 4 - itemW / 2 + 4
+            local posY = self.pos[2] - itemH / 2 - socketH / 4 + 8
 			love.graphics.draw(
 				itemSprite,
-				self.pos[1] - socketW / 4 - itemW / 2 + 4,
-				self.pos[2] - itemH / 2 - socketH / 4 + 8,
+                posX,
+				posY,
 				0,
 				itemScale,
 				itemScale
-			)
+            )
+			love.graphics.print(tostring(item.quantity).."x", posX, posY, 0, 0.5)
 		end
 	end
 
@@ -78,15 +84,18 @@ function ItemSlot:draw()
 		if item.quantity > 0 then
 			local itemSprite = item.sprite
 			local itemW = itemSprite:getWidth() * itemScale
-			local itemH = itemSprite:getHeight() * itemScale
+            local itemH = itemSprite:getHeight() * itemScale
+			local posX = self.pos[1] - socketW / 4 - itemW / 2 + 4
+			local posY = self.pos[2] - itemH / 2 + socketH / 4
 			love.graphics.draw(
 				itemSprite,
-				self.pos[1] - socketW / 4 - itemW / 2 + 4,
-				self.pos[2] - itemH / 2 + socketH / 4,
+				posX,
+				posY,
 				0,
 				itemScale,
 				itemScale
 			)
+			love.graphics.print(tostring(item.quantity).."x", posX, posY, 0, 0.5)
 		end
 	end
 

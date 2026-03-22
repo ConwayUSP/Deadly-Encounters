@@ -32,7 +32,7 @@ function Player:reset()
 	Player.defCount = 0
 	Player.dmgMult = 1
 	Player.action = ACTION.NONE
-	Player.inventory = Inventory.new()
+	Player.inventory = Inventory.new({initEnergyDrink(), initPotion(), initFlashbang()})
 end
 
 function Player:resetForBattle()
