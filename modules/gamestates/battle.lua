@@ -694,9 +694,9 @@ function BattleState:simulateBattle()
 		self.hasEnded = true
 		self.endTimer = 2
 		if turnResult == Combat.WIN then
-			self.oponent.action = ACTION.DEAD
+			self.oponent:setAction(ACTION.DEAD)
 		else
-			Player.action = ACTION.DEAD
+			Player:setAction(ACTION.DEAD)
 		end
 	end
 end
@@ -816,6 +816,8 @@ function BattleState:updateActionSlots()
 end
 
 function BattleState:update(dt)
+	Player:update(dt)
+	self.oponent:update(dt)
 	if not self.hasEnded then
 		local pt = self.timer
 		self.timer = pt - dt
@@ -849,7 +851,7 @@ function BattleState:update(dt)
 		-- count chegou a 3.5 -> volta ao idle e limpa os textos
 		if pt > 3.5 and self.timer < 3.5 and self.turn > 1 then
 			self:setAction(0)
-			self.oponent.action = ACTION.NONE
+			self.oponent:setAction(ACTION.NONE)
 			self.actionsEnabled = true
 		end
 
@@ -1049,9 +1051,9 @@ function BattleState:setAction(num)
 
 	-- alterando a acao do jogador
 	if Player.action == ACTION_IDX[num] or num == 0 then
-		Player.action = ACTION.NONE
+		Player:setAction(ACTION.NONE)
 	else
-		Player.action = ACTION_IDX[num]
+		Player:setAction(ACTION_IDX[num])
 	end
 
 	local actionChanged = prevAction ~= Player.action

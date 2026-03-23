@@ -12,6 +12,8 @@ require("modules.inventory")
 Player = {}
 Player.__index = Player
 
+Player.TRANSITION_DUR = 0.15
+
 Player.name = "you"
 Player.maxHp = 200
 Player.hp = Player.maxHp
@@ -21,6 +23,10 @@ Player.ammo = 0
 Player.defCount = 0
 Player.dmgMult = 1
 Player.action = ACTION.NONE
+Player.prevAction = ACTION.NONE
+Player.actionTimer = Player.TRANSITION_DUR
+Player.isTransitioning = false
+Player.scaleX = 1
 Player.inventory = Inventory.new()
 Player.blinkDuration = 2
 Player.blinkTimer = 0
@@ -36,6 +42,33 @@ function Player:reset()
 	Player.action = ACTION.NONE
 	Player.inventory = Inventory.new()
 	Player.blinkTimer = 0
+end
+
+function Player:setAction(action)
+	if action == self.action then
+		return
+	end
+	self.isTransitioning = true
+	self.actionTimer = Player.TRANSITION_DUR
+	self.prevAction = self.action
+	self.action = action
+end
+
+function Player:getScaleX()
+	local zeroToOne = math.abs(self.actionTimer - Player.TRANSITION_DUR / 2) * 1 / (Player.TRANSITION_DUR / 2)
+	return zeroToOne
+end
+
+function Player:update(dt)
+	if self.isTransitioning then
+		self.actionTimer = self.actionTimer - dt
+		if self.actionTimer <= 0 then
+			self.isTransitioning = false
+			self.scaleX = 1
+		else
+			self.scaleX = self:getScaleX()
+		end
+	end
 end
 
 function Player:resetForBattle()
@@ -83,8 +116,14 @@ function Player:useBuff(buff)
 end
 
 function Player:draw(pos)
-	local animation = self.animations[self.action]
+	local animation
+	if self.isTransitioning and self.actionTimer > self.TRANSITION_DUR / 2 then
+		animation = self.animations[self.prevAction]
+	else
+		animation = self.animations[self.action]
+	end
 	local quad = animation.frames[animation.currFrame]
+
 	local offset = {
 		x = animation.frameDim.width / 2,
 		y = animation.frameDim.height / 2,
@@ -98,7 +137,31 @@ function Player:draw(pos)
 			return
 		end
 	end
-	love.graphics.draw(self.spriteSheets[self.action], quad, pos[1], pos[2], 0, scale, scale, offset.x, offset.y)
+	if self.isTransitioning and self.actionTimer > self.TRANSITION_DUR / 2 then
+		love.graphics.draw(
+			self.spriteSheets[self.prevAction],
+			quad,
+			pos[1],
+			pos[2],
+			0,
+			self.scaleX * scale,
+			scale,
+			offset.x,
+			offset.y
+		)
+	else
+		love.graphics.draw(
+			self.spriteSheets[self.action],
+			quad,
+			pos[1],
+			pos[2],
+			0,
+			self.scaleX * scale,
+			scale,
+			offset.x,
+			offset.y
+		)
+	end
 end
 
 return Player

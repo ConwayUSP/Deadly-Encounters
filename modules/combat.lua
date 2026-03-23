@@ -24,7 +24,7 @@ Combat.sounds = {
 
 -- simula um turno do combate, retornando o resultado do combate após o turno
 function simulateTurn(player, oponent, hist)
-	oponent.action = oponent:makeDecision(player, hist)
+	oponent:setAction(oponent:makeDecision(player, hist))
 
 	useItems(player, oponent)
 	useItems(oponent, player)

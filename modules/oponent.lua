@@ -13,6 +13,8 @@ require("modules.constructors.oponents")
 Oponent = {}
 Oponent.__index = Oponent
 
+Oponent.TRANSITION_DUR = 0.15
+
 function Oponent.new(name, maxHP, maxCounters, items, upgrades, strategyFunc)
 	local oponent = setmetatable({}, Oponent)
 
@@ -27,6 +29,10 @@ function Oponent.new(name, maxHP, maxCounters, items, upgrades, strategyFunc)
 	oponent.ammo = 0
 	oponent.inventory = Inventory.new(items, upgrades)
 	oponent.action = ACTION.NONE
+	oponent.prevAction = ACTION.NONE
+	oponent.actionTimer = Oponent.TRANSITION_DUR
+	oponent.isTransitioning = false
+	oponent.scaleX = 1
 	oponent.blinkDuration = 2
 	oponent.blinkTimer = 0
 	initCreatureAnimations(oponent)
@@ -39,6 +45,33 @@ function Oponent.new(name, maxHP, maxCounters, items, upgrades, strategyFunc)
 	end
 
 	return oponent
+end
+
+function Oponent:setAction(action)
+	if action == self.action then
+		return
+	end
+	self.isTransitioning = true
+	self.actionTimer = Oponent.TRANSITION_DUR
+	self.prevAction = self.action
+	self.action = action
+end
+
+function Oponent:update(dt)
+	if self.isTransitioning then
+		self.actionTimer = self.actionTimer - dt
+		if self.actionTimer <= 0 then
+			self.isTransitioning = false
+			self.scaleX = 1
+		else
+			self.scaleX = self:getScaleX()
+		end
+	end
+end
+
+function Oponent:getScaleX()
+	local zeroToOne = math.abs(self.actionTimer - Player.TRANSITION_DUR / 2) * 1 / (Player.TRANSITION_DUR / 2)
+	return zeroToOne
 end
 
 function Oponent:hasUpgrade(upgradeId)
@@ -84,7 +117,12 @@ function Oponent:useBuff(buff)
 end
 
 function Oponent:draw(pos)
-	local animation = self.animations[self.action]
+	local animation
+	if self.isTransitioning and self.actionTimer > self.TRANSITION_DUR / 2 then
+		animation = self.animations[self.prevAction]
+	else
+		animation = self.animations[self.action]
+	end
 	local quad = animation.frames[animation.currFrame]
 	local offset = {
 		x = animation.frameDim.width / 2,
@@ -99,7 +137,31 @@ function Oponent:draw(pos)
 			return
 		end
 	end
-	love.graphics.draw(self.spriteSheets[self.action], quad, pos[1], pos[2], 0, scale, scale, offset.x, offset.y)
+	if self.isTransitioning and self.actionTimer > self.TRANSITION_DUR / 2 then
+		love.graphics.draw(
+			self.spriteSheets[self.prevAction],
+			quad,
+			pos[1],
+			pos[2],
+			0,
+			self.scaleX * scale,
+			scale,
+			offset.x,
+			offset.y
+		)
+	else
+		love.graphics.draw(
+			self.spriteSheets[self.action],
+			quad,
+			pos[1],
+			pos[2],
+			0,
+			self.scaleX * scale,
+			scale,
+			offset.x,
+			offset.y
+		)
+	end
 end
 
 function generateOponentPool()
