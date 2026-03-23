@@ -20,20 +20,20 @@ redBordersShader = love.graphics.newShader([[
 	{
 		float playerHPNormal = playerHP / 200.0;
 		float centerDist = sqrt(pow(screen_coords.x - 960.0, 2.0) + pow(screen_coords.y - 580.0, 2.0));
-		float redness = centerDist - 800;
-		redness = redness / 300;
-		redness = pow(redness, 2);
+		float redness = centerDist - 800.0;
+		redness = redness / 300.0;
+		redness = pow(redness, 2.0);
 		redness = redness - playerHPNormal;
-		if(redness < 0) {
-			redness = 0;
+		if(redness < 0.0) {
+			redness = 0.0;
 		}
 		
 		vec4 texcolor = Texel(texture, texture_coords);
 
-		if(centerDist < 800) {
+		if(centerDist < 800.0) {
 			return texcolor;
 		} else {
-			return texcolor - vec4(redness / 3, redness, redness, 0.0);
+			return texcolor - vec4(redness / 3.0, redness, redness, 0.0);
 		}
 	}
 ]])
