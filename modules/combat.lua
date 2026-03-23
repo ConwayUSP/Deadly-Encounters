@@ -12,7 +12,7 @@ Combat.sounds = {
 	DEATH_02 = love.audio.newSource("sounds/death_02.mp3", "static"),
 	DEATH_03 = love.audio.newSource("sounds/death_03.mp3", "static"),
 	DEATH_BOSS = love.audio.newSource("sounds/death_boss.mp3", "static"),
-	-- COUNTER = love.audio.newSource("sounds/counter.mp3", "static"),
+	COUNTER = love.audio.newSource("sounds/counter.mp3", "static"),
 	-- ATTACK = love.audio.newSource("sounds/attack.mp3", "static"),
 	-- HEAVY_ATTACK = love.audio.newSource("sounds/heavy_attack.mp3", "static"),
 	-- RELOAD = love.audio.newSource("sounds/reload.mp3", "static")
@@ -86,18 +86,18 @@ function applyAction(attacker, target)
 		reload(attacker)
 	elseif attackerAction == ACTION.ATK then
 		if targetAction == ACTION.COUNTER then
-			attack(attacker, target)
+			attack(attacker, attacker)
 			spendAmmo(attacker)
-			-- TODO: som contra-ataque
+			Combat.sounds.COUNTER:play()
 		else
 			attack(target, attacker)
 			spendAmmo(attacker)
 		end
 	elseif attackerAction == ACTION.HEAVY_ATK then
 		if targetAction == ACTION.COUNTER then
-			heavyAttack(attacker, target)
+			heavyAttack(attacker, attacker)
 			spendAmmo(attacker)
-			-- TODO: som contra-ataque
+			Combat.sounds.COUNTER:play()
 		else
 			heavyAttack(target, attacker)
 			spendAmmo(attacker)
