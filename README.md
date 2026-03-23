@@ -63,6 +63,20 @@ docker build -t game-image .
 docker run --publish 3000:80 --detach --name game game-image
 ```
 
+## How to play
+
+The rules are simple, select your action while the **counter** decreases, and when it gets to 0, your action takes effect.
+
+ACTIONS:
+
+- Recharge: gain 1 ammo
+- Attack: spend 1 ammo to do some damage
+- Super Attack: spend 2 ammo to do a lot of damage
+- Defense: negates `Attack` damage and reduces `Super Attack` damage
+- **Counter** Attack: redirects the oponent damage to himself. You have 3 counters per battle
+
+After each battle, you go to the shop. There, the guy in the **counter** will give you items and upgrades - choose wisely!
+
 ## Assets & Credits
 
 All visual art assets (characters, environments, UI, icons, etc.) were created by the Deadly Encounter team specifically for this project.
@@ -87,7 +101,7 @@ All audio assets (sound effects and music) were sourced from libraries with appr
 - Caique Costa ([@ccostafrias](https://github.com/ccostafria)) 
 - Caio Bernardo ([@caio-bernardo](https://github.com/caio-bernardo))
 - João Gabriel ([@jonyski](https://github.com/Jonyski))
-- Letícia Sati
+- Letícia Sati ([@sati-dev2007](https://github.com/sati-dev2007))
 
 ## Acknowledgement
 
