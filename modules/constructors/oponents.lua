@@ -98,7 +98,7 @@ function initDjabo()
 	end
 
 	-- Has flashbangs and reverse cards and more counters
-	return Oponent.new(Oponents.DJABO, 200, 8, {initFlashbang(2)}, {initReverseCard()}, djaboStrategy)
+	return Oponent.new(Oponents.DJABO, 200, 3, {initFlashbang(2)}, {initReverseCard(), initReverseCard()}, djaboStrategy)
 end
 
 
@@ -152,7 +152,7 @@ function initOZard()
 			{ weight = 2, value = ACTION.ATK }, -- focus on attacks
 		}
 
-		if self.hp < self.maxHp / 2 and self:hasItem(ITEM.POTION) and math.random() < 0.7 then
+		if self.hp < self.maxHp / 2 and self:hasItem(ITEM.POTION) and math.random() < 0.6 then
 				self:useItem(ITEM.POTION)
 		end
 
@@ -172,7 +172,7 @@ function initOZard()
 	end
 
 	-- add shield and potions
-	return Oponent.new(Oponents.OZARD, 200, 4, {initPotion()}, {initShield()}, ozardStrategy)
+	return Oponent.new(Oponents.OZARD, 200, 3, {initPotion(2)}, {initShield(), initReverseCard()}, ozardStrategy)
 end
 
 -- Cangaceiro
@@ -236,7 +236,7 @@ function initAberration()
 
 		-- if with less than half of health
 		-- interfes with player action slots
-		if self.hp <= 200 / 2 and math.random() < 0.6 then
+		if self.hp <= self.maxHp / 2 and math.random() < 0.6 then
 			GAMESTATE[GameCtx]:shuffleActionSlots()
 		end
 
@@ -263,5 +263,5 @@ function initAberration()
 		return solveInvalidAction(choice, self)
 	end
 
-	return Oponent.new(Oponents.ABERRATION, 200, 3, nil, nil, aberrationStrategy)
+	return Oponent.new(Oponents.ABERRATION, 250, 3, {initEnergyDrink()}, {initReverseCard()}, aberrationStrategy)
 end

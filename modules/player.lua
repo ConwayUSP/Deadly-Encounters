@@ -13,7 +13,7 @@ Player = {}
 Player.__index = Player
 
 Player.name = "you"
-Player.maxHp = 150
+Player.maxHp = 200
 Player.hp = Player.maxHp
 Player.maxCounters = 3
 Player.counters = Player.maxCounters
