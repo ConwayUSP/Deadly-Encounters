@@ -921,6 +921,8 @@ function BattleState:update(dt)
 end
 
 function BattleState:draw()
+	redBordersShader:send("playerHP", Player.hp)
+	love.graphics.setShader(redBordersShader)
 	local screenW, screenH = love.graphics.getWidth(), love.graphics.getHeight()
 
 	-- background
@@ -1015,6 +1017,7 @@ function BattleState:draw()
 	end
 
 	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.setShader()
 end
 
 -- Detecta o input do usuário
