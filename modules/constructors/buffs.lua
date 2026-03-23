@@ -91,8 +91,8 @@ function initStopWatch()
 	local desc = "Increases damage if the ability is selected near the time runs out"
 
 	local func = function(criatura, time)
-		if time < 0.5 and not criatura.timedRight then
-			criatura.dmgMult = criatura.dmgMult + 0.2
+		if time < 0.25 and not criatura.timedRight then
+			criatura.dmgMult = criatura.dmgMult + 0.3
 			criatura.timedRight = true
 			-- TODO: som disso?
 		end
