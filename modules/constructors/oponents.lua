@@ -263,5 +263,5 @@ function initAberration()
 		return solveInvalidAction(choice, self)
 	end
 
-	return Oponent.new(Oponents.ABERRATION, 250, 3, {initEnergyDrink(2)}, {initReverseCard(), initDefibrillator(100)}, aberrationStrategy)
+	return Oponent.new(Oponents.ABERRATION, 250, 3, {initEnergyDrink(2)}, {initReverseCard(), initDefibrillator(85)}, aberrationStrategy)
 end
