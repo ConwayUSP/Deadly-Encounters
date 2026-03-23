@@ -746,7 +746,6 @@ function BattleState:endBattle()
 end
 
 function BattleState:load()
-	Player:getBuff(UPGRADE.STOPWATCH)
 	self:reset()
 
 	-- sprites
