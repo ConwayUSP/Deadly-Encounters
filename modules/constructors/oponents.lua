@@ -172,7 +172,7 @@ function initOZard()
 	end
 
 	-- add shield and potions
-	return Oponent.new(Oponents.OZARD, 200, 3, {initPotion(2)}, {initShield(), initReverseCard()}, ozardStrategy)
+	return Oponent.new(Oponents.OZARD, 200, 3, {initPotion(2)}, {initShield()}, ozardStrategy)
 end
 
 -- Cangaceiro
@@ -263,5 +263,5 @@ function initAberration()
 		return solveInvalidAction(choice, self)
 	end
 
-	return Oponent.new(Oponents.ABERRATION, 250, 3, {initEnergyDrink()}, {initReverseCard()}, aberrationStrategy)
+	return Oponent.new(Oponents.ABERRATION, 250, 3, {initEnergyDrink(2)}, {initReverseCard(), initDefibrillator(100)}, aberrationStrategy)
 end
