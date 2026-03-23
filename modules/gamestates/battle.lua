@@ -764,6 +764,8 @@ function BattleState:load()
 	self.sounds.counter2 = love.audio.newSource("sounds/counter_2.mp3", "static")
 	self.sounds.counter1 = love.audio.newSource("sounds/counter_1.mp3", "static")
 	self.sounds.counterShoot = love.audio.newSource("sounds/counter_shoot.mp3", "static")
+	self.sounds.shuffle = love.audio.newSource("sounds/shuffle.mp3", "static")
+	self.sounds.shuffle:setVolume(0.5)
 end
 
 function BattleState:resetTurn()
@@ -1071,6 +1073,7 @@ end
 
 function BattleState:shuffleActionSlots()
 	local usedIndexes = {}
+	self.sounds.shuffle:play()
 	for _, slot in pairs(self.actionSlots) do
 		local newIndex = math.random(1, 5)
 		while usedIndexes[newIndex] do
