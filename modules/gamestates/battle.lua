@@ -947,7 +947,8 @@ function BattleState:draw()
 	end
 
 	-- ammo amount
-	local amountX = screenW / 5 + 30
+	local startX = self.actionSlots[1].startX - self.actionSlots[1].socket:getWidth() * self.actionSlots[1].scale / 2 - self.sprites.amount:getWidth() - 20
+	local amountX = startX
 	local amountY = screenH - self.sprites.amount:getHeight() - 60
 	love.graphics.draw(self.sprites.amount, amountX, amountY, 0, 1, 1)
 
