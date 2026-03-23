@@ -87,6 +87,7 @@ function applyAction(attacker, target)
 	elseif attackerAction == ACTION.ATK then
 		if targetAction == ACTION.COUNTER then
 			attack(attacker, target)
+			spendAmmo(attacker)
 			-- TODO: som contra-ataque
 		else
 			attack(target, attacker)
@@ -95,6 +96,7 @@ function applyAction(attacker, target)
 	elseif attackerAction == ACTION.HEAVY_ATK then
 		if targetAction == ACTION.COUNTER then
 			heavyAttack(attacker, target)
+			spendAmmo(attacker)
 			-- TODO: som contra-ataque
 		else
 			heavyAttack(target, attacker)
