@@ -43,12 +43,12 @@ function initShield()
 	return ItemUpgrade.new(UPGRADE.SHIELD, desc, func, BUFF_TYPE.UPGRADE, nil, true)
 end
 
-function initDefibrillator()
+function initDefibrillator(restoreHp)
 	--local desc = "Ressuscita a criatura com 20 HP após ser derrotada"
-	local desc = "Ressurects you with 20 HP after being defeated"
+	local desc = "Ressurects you with part of your HP after being defeated"
 
 	local func = function(criatura)
-		criatura.hp = 20
+		criatura.hp = restoreHp or 20
 		criatura.defibrilated = true
 		criatura.inventory:removeUpgrade(UPGRADE.DEFIBRILLATOR)
 		buffSounds[UPGRADE.DEFIBRILLATOR]:play()
@@ -59,7 +59,7 @@ end
 
 function initReverseCard()
 	--local desc = "+1 contra-ataque MÁXIMO"
-	local desc = "+1 counterattack MAX"
+	local desc = "+1 Counter Action"
 
 	local func = function(criatura)
 		criatura.maxCounters = criatura.maxCounters + 1
@@ -120,7 +120,7 @@ end
 
 function initPotion(quantity)
 	--local desc = "Restaura 10 HP"
-	local desc = "Restores 10 HP"
+	local desc = "Gain 3 potions to restores your HP"
 	local qnt = quantity or 3
 	local func = function(criatura)
 		cure(criatura)
