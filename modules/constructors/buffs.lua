@@ -9,7 +9,7 @@ require("modules.combat")
 ----------------------------------------
 
 local buffSounds = {
-	-- [UPGRADE.STOPWATCH] = love.audio.newSource("sounds/stopwatch.mp3", "static"),
+	[UPGRADE.STOPWATCH] = love.audio.newSource("sounds/stopwatch.mp3", "static"),
 	[UPGRADE.PARRY] = love.audio.newSource("sounds/parry.mp3", "static"),
 	[UPGRADE.LUCKY_TOTEM] = love.audio.newSource("sounds/lucky_totem.mp3", "static"),
 	[UPGRADE.DEFIBRILLATOR] = love.audio.newSource("sounds/defibrillator.mp3", "static"),
@@ -94,7 +94,7 @@ function initStopWatch()
 		if time < 0.25 and not criatura.timedRight then
 			criatura.dmgMult = criatura.dmgMult + 0.3
 			criatura.timedRight = true
-			-- TODO: som disso?
+			buffSounds[UPGRADE.STOPWATCH]:play()
 		end
 	end
 
