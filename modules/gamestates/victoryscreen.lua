@@ -1,4 +1,4 @@
-local FinalScreen = require("modules.finalscreen")
+local FinalScreen = require("modules.gamestates.finalscreen")
 
 local VictoryState = {}
 VictoryState.__index = VictoryState

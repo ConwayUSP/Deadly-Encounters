@@ -234,17 +234,6 @@ local ShopState = {}
 ShopState.__index = ShopState
 
 -- todos os itens disponíves à venda
-ShopState.allItems = {
-	initParry(),
-	initShield(),
-	initDefibrillator(),
-	initReverseCard(),
-	initTotem(),
-	initStopWatch(),
-	initEnergyDrink(),
-	initFlashbang(),
-	initPotion(),
-}
 ShopState.sprites = {}
 ShopState.texts = {}
 ShopState.sounds = {}
@@ -257,6 +246,23 @@ ShopState.purchasedSlots = {}
 ShopState.timer = 0
 ShopState.slots = {}
 ShopState.font = nil
+
+function ShopState:setInitialItems()
+	self.allItems = {
+		initParry(),
+		initShield(),
+		initDefibrillator(),
+		initReverseCard(),
+		initTotem(),
+		initStopWatch(),
+		initEnergyDrink(),
+		initFlashbang(),
+		initPotion(),
+	}
+end
+
+ShopState.allItems = {}
+ShopState:setInitialItems()
 
 function ShopState:setPurchasedSlots(items)
 	self.purchasedSlots = {}
@@ -336,6 +342,10 @@ function ShopState:load()
 	-- Player:getBuff(initFlashbang())
 
 	self:reset()
+end
+
+function ShopState:restartGame()
+	self:setInitialItems()
 end
 
 -- reinicia a loja, limpando os itens à venda e sorteando novos

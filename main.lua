@@ -6,7 +6,6 @@ require("modules.actions")
 require("modules.gamectx")
 require("modules.gamestate")
 require("modules.oponent")
-require("modules.finalscreen")
 
 Player = require("modules.player")
 

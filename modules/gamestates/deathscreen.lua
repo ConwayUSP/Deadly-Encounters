@@ -1,4 +1,4 @@
-local FinalScreen = require("modules.finalscreen")
+local FinalScreen = require("modules.gamestates.finalscreen")
 
 local DeathState = {}
 DeathState.__index = DeathState

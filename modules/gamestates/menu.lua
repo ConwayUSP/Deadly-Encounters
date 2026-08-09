@@ -25,7 +25,13 @@ MenuState.isFirstRender = true
 
 function MenuState:load()
 	local width, height = love.graphics.getDimensions()
-	GAMESTATE[CTX.BATTLE]:restartGame()
+	
+	for _, gameState in pairs(GAMESTATE) do
+		if gameState.restartGame then
+			gameState:restartGame()
+		end
+	end
+
 	self.logoScale = 0
 
 	-- sprites
