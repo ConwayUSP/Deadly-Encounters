@@ -723,6 +723,28 @@ function BattleState:addPlusAmmoText(criatura, amount)
 	table.insert(self.plusAmmoTexts, plus)
 end
 
+function BattleState:addDamageOrHealingText(criatura, amount)
+	if not amount or amount == 0 then
+		return
+	end
+
+	local width, height = love.graphics.getDimensions()
+	local xOffset = 150
+	local yOffset = math.random(-50, 50)
+	local pos = criatura.name == Player.name and { 2.5 * width / 12 + xOffset, height / 2.5 + yOffset }
+		or { 9.5 * width / 12 - xOffset, height / 2.5 + yOffset }
+	local textPos = { pos[1], pos[2] }
+
+	local content = amount > 0 and "+" .. tostring(amount) or tostring(amount)
+	local color = amount > 0 and { 0, 1, 0, 1 } or { 1, 0, 0, 1 }
+
+	local text = Text.new(content, 32, color, textPos, 0, 0, 1.5, function(text, dt)
+		text.pos[2] = text.pos[2] - 60 * dt
+		text.color[4] = text.color[4] - dt / 1.5
+	end)
+	table.insert(self.texts, text)
+end
+
 function BattleState:onShieldBroken(criatura)
 	if not self.healthBar then
 		return

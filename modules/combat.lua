@@ -182,10 +182,16 @@ function spendAmmo(creature)
 end
 
 function cure(creature)
+	local cure
 	if creature.hp + 60 <= creature.maxHp then
-		creature.hp = creature.hp + 60
+		cure = 60
 	else
-		creature.hp = creature.maxHp
+		cure = creature.maxHp - creature.hp
+	end
+	
+	creature.hp = creature.hp + cure
+	if cure > 0 then
+		GAMESTATE[CTX.BATTLE]:addDamageOrHealingText(creature, cure)
 	end
 end
 
@@ -204,6 +210,8 @@ function causeDamage(target, dmg, attacker)
 	if target.name == "you" then
 		camera:shake(dmg / 100, 0.5)
 	end
+
+	GAMESTATE[CTX.BATTLE]:addDamageOrHealingText(target, -dmg)
 
 	if target.hp - dmg <= 0 then
 		local defibrillator = target:hasUpgrade(UPGRADE.DEFIBRILLATOR)
