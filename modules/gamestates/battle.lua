@@ -822,6 +822,14 @@ function BattleState:updateActionSlots()
 	self.actionSlots[getIdFromValue(ACTION.DEFENSE, ACTION_IDX)]:updateText({ current = Player.defCount, total = 2 })
 end
 
+local COUNTER_INTERVAL = 0.4
+
+local COUNTER_TIMINGS = {
+	{ number = "three", sound = "counter3", time = COUNTER_INTERVAL * 3 },
+	{ number = "two", sound = "counter2", time = COUNTER_INTERVAL * 2 },
+	{ number = "one", sound = "counter1", time = COUNTER_INTERVAL },
+}
+
 function BattleState:update(dt)
 	Player:update(dt)
 	self.oponent:update(dt)
@@ -862,18 +870,11 @@ function BattleState:update(dt)
 			self.actionsEnabled = true
 		end
 
-		-- count chegou a 2.25 -> inicia a contagem acelerada (3)
-		if pt > 2.25 and self.timer < 2.25 then
-			self.counter:setCounter(self.sprites.three)
-			self.sounds.counter3:play()
-		end
-		if pt > 1.5 and self.timer < 1.5 then
-			self.counter:setCounter(self.sprites.two)
-			self.sounds.counter2:play()
-		end
-		if pt > 0.75 and self.timer < 0.75 then
-			self.counter:setCounter(self.sprites.one)
-			self.sounds.counter1:play()
+		for _, counter in ipairs(COUNTER_TIMINGS) do
+			if pt > counter.time and self.timer <= counter.time then
+				self.counter:setCounter(self.sprites[counter.number])
+				self.sounds[counter.sound]:play()
+			end
 		end
 	else
 		self.endTimer = self.endTimer - dt
