@@ -20,6 +20,17 @@ ACTION_IDX[4] = ACTION.HEAVY_ATK
 ACTION_IDX[5] = ACTION.COUNTER
 ACTION_IDX[6] = ACTION.MISS
 
+local ACTION_COLORS = {
+	[ACTION.NONE] = {0.35, 0.35, 0.38}, -- gray 
+	[ACTION.RECHARGE] = {0.95, 0.75, 0.2},  -- yellow
+	[ACTION.ATK] = {0.25, 0.55, 0.95}, -- blue
+	[ACTION.HEAVY_ATK] = {0.15, 0.25, 0.6}, -- deep blue
+	[ACTION.DEFENSE] = {0.2, 0.6, 0.35}, -- green 
+	[ACTION.COUNTER] = {0.4, 0.9, 0.5}, -- bright green
+	[ACTION.MISS] = {0.9, 0.25, 0.25}, -- red
+	[ACTION.DEAD] = {0.08, 0.08, 0.1}, -- near black
+}
+
 -- transform action name into its pretty name
 function toPrettyActionName(action)
 	local prettyNames = {
@@ -36,18 +47,19 @@ function toPrettyActionName(action)
 	return prettyNames[action]
 end
 
+
 -- map action to a color for the UI
 function mapToColor(action)
-	local colors = {
-		[ACTION.NONE] = {0.35, 0.35, 0.38}, -- gray 
-		[ACTION.RECHARGE] = {0.95, 0.75, 0.2},  -- yellow
-		[ACTION.ATK] = {0.25, 0.55, 0.95}, -- blue
-		[ACTION.HEAVY_ATK] = {0.15, 0.25, 0.6}, -- deep blue
-		[ACTION.DEFENSE] = {0.2, 0.6, 0.35}, -- green 
-		[ACTION.COUNTER] = {0.4, 0.9, 0.5}, -- bright green
-		[ACTION.MISS] = {0.9, 0.25, 0.25}, -- red
-		[ACTION.DEAD] = {0.08, 0.08, 0.1}, -- near black
-	}
+	local color = ACTION_COLORS[action]
 
-	return colors[action]
+	if not color then
+		return {1, 1, 1, 1}
+	end
+
+	return {
+		color[1],
+		color[2],
+		color[3],
+		color[4] or 1
+	}
 end

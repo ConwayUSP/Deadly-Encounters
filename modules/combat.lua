@@ -199,6 +199,11 @@ function causeDamage(target, dmg, attacker)
 	end
 
 	dmg = dmg * attacker.dmgMult
+	target.dmgTimer = 0.5
+  
+	if target.name == "you" then
+		camera:shake(dmg / 100, 0.5)
+	end
 
 	if target.hp - dmg <= 0 then
 		local defibrillator = target:hasUpgrade(UPGRADE.DEFIBRILLATOR)

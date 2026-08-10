@@ -30,6 +30,9 @@ Player.scaleX = 1
 Player.inventory = Inventory.new()
 Player.blinkDuration = 2
 Player.blinkTimer = 0
+Player.dmgTimer = 0
+Player.shakeX = 0
+Player.shakeY = 0
 initCreatureAnimations(Player)
 
 function Player:reset()
@@ -68,6 +71,23 @@ function Player:update(dt)
 		else
 			self.scaleX = self:getScaleX()
 		end
+	end
+
+	if self.blinkTimer > 0 then
+		self.blinkTimer = math.max(0, self.blinkTimer - dt)
+	end
+
+	if self.dmgTimer > 0 then
+		local shakeIntensity = 4
+		self.dmgTimer = self.dmgTimer - dt
+
+		self.shakeX = love.math.random(-shakeIntensity, shakeIntensity)
+    self.shakeY = love.math.random(-shakeIntensity, shakeIntensity)
+
+    if self.dmgTimer <= 0 then
+      self.shakeX = 0
+      self.shakeY = 0
+    end
 	end
 end
 
@@ -137,6 +157,12 @@ function Player:draw(pos)
 			return
 		end
 	end
+	
+	if self.dmgTimer > 0 and self.action ~= ACTION.DEAD then
+		whiteShader:send("fillColor", {1, 1, 1, 1})
+		love.graphics.setShader(whiteShader)
+	end
+
 	if self.isTransitioning and self.actionTimer > self.TRANSITION_DUR / 2 then
 		love.graphics.draw(
 			self.spriteSheets[self.prevAction],
@@ -146,8 +172,8 @@ function Player:draw(pos)
 			0,
 			self.scaleX * scale,
 			scale,
-			offset.x,
-			offset.y
+			offset.x + self.shakeX,
+			offset.y + self.shakeY
 		)
 	else
 		love.graphics.draw(
@@ -158,10 +184,13 @@ function Player:draw(pos)
 			0,
 			self.scaleX * scale,
 			scale,
-			offset.x,
-			offset.y
+			offset.x + self.shakeX,
+			offset.y + self.shakeY
 		)
 	end
+
+	love.graphics.setShader()
+	love.graphics.setColor(1, 1, 1, 1)
 end
 
 return Player

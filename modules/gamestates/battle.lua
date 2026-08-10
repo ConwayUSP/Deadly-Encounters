@@ -209,11 +209,12 @@ function ActionSlot:draw()
 		love.graphics.print(text, self.pos[1] - socketW / 2 + padding, self.pos[2] - socketH / 2 + padding)
 	end
 
-	if self.disabled then
-		love.graphics.setShader()
-	elseif self.active then
+	if self.disabled or self.active then
 		love.graphics.setShader()
 	end
+
+	-- reset
+	love.graphics.setColor(1, 1, 1, 1)
 end
 
 ----------------------------------------
@@ -374,6 +375,9 @@ function UpgradesOwned:draw()
 		love.graphics.draw(upgrade.sprite, x, y, 0, self.scale, self.scale)
 		x = x + self.direction * (size + spacing)
 	end
+
+	-- reset
+	love.graphics.setColor(1, 1, 1, 1)
 end
 
 ----------------------------------------
@@ -467,7 +471,6 @@ end
 
 function PlusAmmoText:draw()
 	local prevFont = love.graphics.getFont()
-	local r, g, b, a = love.graphics.getColor()
 
 	love.graphics.setFont(self.font or prevFont)
 	love.graphics.setColor(1, 1, 1, self.alpha)
@@ -486,7 +489,9 @@ function PlusAmmoText:draw()
 	love.graphics.print(text, textX, textY)
 
 	love.graphics.setFont(prevFont)
-	love.graphics.setColor(r, g, b, a)
+	
+	-- reset
+	love.graphics.setColor(1, 1, 1, 1)
 end
 
 ----------------------------------------
@@ -901,14 +906,6 @@ function BattleState:update(dt)
 
 	for _, healthBar in pairs(self.healthBar) do
 		healthBar:update(dt)
-	end
-
-	-- timers de piscar das criaturas (desfibrilador)
-	if Player.blinkTimer and Player.blinkTimer > 0 then
-		Player.blinkTimer = math.max(0, Player.blinkTimer - dt)
-	end
-	if self.oponent.blinkTimer and self.oponent.blinkTimer > 0 then
-		self.oponent.blinkTimer = math.max(0, self.oponent.blinkTimer - dt)
 	end
 
 	-- texts

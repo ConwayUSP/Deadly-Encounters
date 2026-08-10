@@ -3,6 +3,7 @@
 ----------------------------------------
 math.randomseed(os.time()) -- precisa ficar aqui no topo pra randomizar os oponentes
 require("modules.actions")
+require("modules.engine.camera")
 require("modules.gamectx")
 require("modules.gamestate")
 require("modules.oponent")
@@ -10,6 +11,7 @@ require("modules.oponent")
 Player = require("modules.player")
 
 GameCtx = CTX.MENU
+camera = Camera.new()
 
 local Transition = require("modules.engine.transition")
 MainTransition = Transition.new(0.5, Transition.FADEINOUT)
@@ -40,17 +42,26 @@ function love.update(dt)
 	if MainTransition.isActive then
 		return
 	end
+	
 	GAMESTATE[GameCtx]:update(dt)
+	camera:update(dt)	
 end
 
 function love.draw()
-	GAMESTATE[GameCtx]:draw()
+	camera:attach()
+		GAMESTATE[GameCtx]:draw()
+	camera:detach()
+
 	MainTransition:draw()
 end
 
 function love.keypressed(key, scancode, isrepeat)
 	if key == "escape" then
 		love.event.quit()
+	end
+
+	if key == "s" then
+		SetGameCtx(CTX.SHOP)
 	end
 
 	GAMESTATE[GameCtx]:keypressed(key, scancode, isrepeat)

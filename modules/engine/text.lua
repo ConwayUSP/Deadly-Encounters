@@ -54,10 +54,9 @@ end
 
 function Text:draw()
 	-- salvar estado atual
-	local prevFont = love.graphics.getFont()
-	local prevR, prevG, prevB, prevA = love.graphics.getColor()
+	love.graphics.push("all")
 
-	local font = self.font or prevFont
+	local font = self.font or love.graphics.getFont()
 	love.graphics.setFont(font)
 
 	local content = self.content or ""
@@ -82,7 +81,5 @@ function Text:draw()
 		love.graphics.print(content, x, y, rotation, scale, scale, ox, oy)
 	end
 
-	-- restaurar estado anterior
-	love.graphics.setFont(prevFont)
-	love.graphics.setColor(prevR, prevG, prevB, prevA)
+	love.graphics.pop()
 end

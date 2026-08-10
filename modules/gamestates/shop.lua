@@ -88,6 +88,9 @@ function DescriptionCard:draw()
 	love.graphics.setColor(1, 1, 1)
 	self.title:draw(self.position.x, self.position.y)
 	self.description:draw(self.position.x, self.position.y)
+	
+	-- reset
+	love.graphics.setColor(1, 1, 1, 1)
 end
 
 ----------------------------------------
@@ -164,6 +167,9 @@ function ItemSlot:draw()
 		self.scale
 	)
 	love.graphics.setShader()
+
+	-- reset
+	love.graphics.setColor(1, 1, 1, 1)
 end
 
 function ItemSlot:update(dt)
@@ -216,6 +222,9 @@ function PurchasedSlot:draw()
 	local itemX = self.position.x - spriteW / 2
 	local itemY = self.position.y - spriteH / 2
 	love.graphics.draw(self.item.sprite, itemX, itemY, 0, self.scale, self.scale)
+
+	-- reset
+	love.graphics.setColor(1, 1, 1, 1)
 end
 
 function PurchasedSlot:addItem(item)
@@ -304,7 +313,7 @@ function ShopState:load()
 
 	self.sounds.bg:play()
 	self.sounds.bg:setLooping(true)
-	self.sounds.bg:setVolume(0.5)
+	self.sounds.bg:setVolume(1.0)
 
 	self.sounds.bell:play()
 

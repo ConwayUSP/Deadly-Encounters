@@ -13,6 +13,10 @@ require("modules.constructors.oponents")
 Oponent = {}
 Oponent.__index = Oponent
 
+Oponent.dmgTimer = 0
+Oponent.shakeX = 0
+Oponent.shakeY = 0
+
 Oponent.TRANSITION_DUR = 0.15
 
 function Oponent.new(name, maxHP, maxCounters, items, upgrades, strategyFunc)
@@ -35,6 +39,7 @@ function Oponent.new(name, maxHP, maxCounters, items, upgrades, strategyFunc)
 	oponent.scaleX = 1
 	oponent.blinkDuration = 2
 	oponent.blinkTimer = 0
+	oponent.dmgTimer = 0
 	initCreatureAnimations(oponent)
 
 	-- ativa os upgrades para o oponente já surgir buffado
@@ -66,6 +71,24 @@ function Oponent:update(dt)
 		else
 			self.scaleX = self:getScaleX()
 		end
+	end
+
+	
+	if self.blinkTimer > 0 then
+		self.blinkTimer = math.max(0, self.blinkTimer - dt)
+	end
+
+	if self.dmgTimer > 0 and self.action ~= ACTION.DEAD then
+		local shakeIntensity = 4
+		self.dmgTimer = self.dmgTimer - dt
+
+		self.shakeX = love.math.random(-shakeIntensity, shakeIntensity)
+    self.shakeY = love.math.random(-shakeIntensity, shakeIntensity)
+
+    if self.dmgTimer <= 0 and self.action ~= ACTION.DEAD then
+      self.shakeX = 0
+      self.shakeY = 0
+    end
 	end
 end
 
@@ -137,6 +160,13 @@ function Oponent:draw(pos)
 			return
 		end
 	end
+
+		
+	if self.dmgTimer > 0 and self.action ~= ACTION.DEAD then
+		whiteShader:send("fillColor", {1, 1, 1, 1})
+		love.graphics.setShader(whiteShader)
+	end
+
 	if self.isTransitioning and self.actionTimer > self.TRANSITION_DUR / 2 then
 		love.graphics.draw(
 			self.spriteSheets[self.prevAction],
@@ -146,8 +176,8 @@ function Oponent:draw(pos)
 			0,
 			self.scaleX * scale,
 			scale,
-			offset.x,
-			offset.y
+			offset.x + self.shakeX,
+			offset.y + self.shakeY
 		)
 	else
 		love.graphics.draw(
@@ -158,10 +188,13 @@ function Oponent:draw(pos)
 			0,
 			self.scaleX * scale,
 			scale,
-			offset.x,
-			offset.y
+			offset.x + self.shakeX,
+			offset.y + self.shakeY
 		)
 	end
+
+	love.graphics.setShader()
+	love.graphics.setColor(1, 1, 1, 1)
 end
 
 function generateOponentPool()
